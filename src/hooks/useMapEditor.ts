@@ -475,28 +475,57 @@ export function useMapEditor() {
     const mobSpawns: MobSpawn[] = [];
     
     // Parse INSERT statements for mob_spawning table
-    // Format: INSERT INTO mob_spawning (object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay) VALUES (...)
-    const insertRegex = /INSERT\s+INTO\s+[`']?mob_spawning[`']?\s*\([^)]+\)\s*VALUES\s*([\s\S]*?)(?:;|$)/gi;
-    const valueRegex = /\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g;
+    // Format with 7 columns: (id, object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay)
+    // Format with 6 columns: (object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay)
     
+    // Match 7-column format: (id, object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay)
+    const value7Regex = /\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g;
+    // Match 6-column format: (object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay)
+    const value6Regex = /\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g;
+    
+    // Try 7-column format first (with id column)
     let match;
-    while ((match = insertRegex.exec(sqlContent)) !== null) {
-      const valuesStr = match[1];
-      let valueMatch;
-      while ((valueMatch = valueRegex.exec(valuesStr)) !== null) {
-        const objectId = parseInt(valueMatch[1]);
-        const tplId = parseInt(valueMatch[2]);
-        const worldId = parseInt(valueMatch[3]);
-        const spawnX = parseInt(valueMatch[4]);
-        const spawnY = parseInt(valueMatch[5]);
-        const respawnDelay = parseInt(valueMatch[6]);
+    while ((match = value7Regex.exec(sqlContent)) !== null) {
+      const objectId = parseInt(match[2]);
+      const tplId = parseInt(match[3]);
+      const worldId = parseInt(match[4]);
+      const spawnX = parseInt(match[5]);
+      const spawnY = parseInt(match[6]);
+      const respawnDelay = parseInt(match[7]);
+      
+      // Filter by world_id if specified
+      if (filterWorldId !== undefined && worldId !== filterWorldId) {
+        continue;
+      }
+      
+      // Convert pixel coordinates to tile coordinates
+      const tileX = Math.floor(spawnX / TILE_SIZE);
+      const tileY = Math.floor(spawnY / TILE_SIZE);
+      
+      mobSpawns.push({
+        id: `mob_${Date.now()}_${objectId}`,
+        objectId,
+        tplId,
+        x: tileX,
+        y: tileY,
+        respawnDelay,
+      });
+    }
+    
+    // If no 7-column matches, try 6-column format
+    if (mobSpawns.length === 0) {
+      while ((match = value6Regex.exec(sqlContent)) !== null) {
+        const objectId = parseInt(match[1]);
+        const tplId = parseInt(match[2]);
+        const worldId = parseInt(match[3]);
+        const spawnX = parseInt(match[4]);
+        const spawnY = parseInt(match[5]);
+        const respawnDelay = parseInt(match[6]);
         
-        // Filter by world_id if specified
         if (filterWorldId !== undefined && worldId !== filterWorldId) {
           continue;
         }
         
-        // Convert pixel coordinates to tile coordinates
         const tileX = Math.floor(spawnX / TILE_SIZE);
         const tileY = Math.floor(spawnY / TILE_SIZE);
         
