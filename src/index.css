@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Press+Start+2P&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 20% 8%;
+    --foreground: 160 60% 90%;
+
+    --card: 220 18% 12%;
+    --card-foreground: 160 60% 90%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 160 60% 90%;
+
+    --primary: 160 100% 45%;
+    --primary-foreground: 220 20% 8%;
+
+    --secondary: 220 18% 18%;
+    --secondary-foreground: 160 60% 90%;
+
+    --muted: 220 15% 16%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 180 100% 40%;
+    --accent-foreground: 220 20% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 160 100% 45%;
+
+    --radius: 0.25rem;
+
+    /* Custom design tokens */
+    --tile-size: 24px;
+    --grid-line: 220 15% 25%;
+    --portal-color: 280 100% 60%;
+    --selection: 60 100% 50%;
+    --panel-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    --sidebar-background: 220 18% 10%;
+    --sidebar-foreground: 160 60% 90%;
+    --sidebar-primary: 160 100% 45%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 18% 18%;
+    --sidebar-accent-foreground: 160 60% 90%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 160 100% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-mono;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .font-pixel {
+    font-family: 'Press Start 2P', cursive;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-card border border-border rounded-sm;
+    box-shadow: var(--panel-shadow);
+  }
+
+  .panel-header {
+    @apply px-3 py-2 border-b border-border bg-secondary/50 text-xs font-semibold uppercase tracking-wider text-primary;
+  }
+
+  .tool-button {
+    @apply p-2 rounded-sm border border-transparent hover:border-primary hover:bg-primary/10 transition-all duration-150;
+  }
+
+  .tool-button.active {
+    @apply border-primary bg-primary/20 text-primary;
+  }
+
+  .tile-grid {
+    background-image: 
+      linear-gradient(to right, hsl(var(--grid-line)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--grid-line)) 1px, transparent 1px);
+    background-size: var(--tile-size) var(--tile-size);
+  }
+
+  .tile-slot {
+    @apply border border-border/50 hover:border-primary cursor-pointer transition-colors;
+    image-rendering: pixelated;
+  }
+
+  .tile-slot.selected {
+    @apply border-2 border-selection;
+    box-shadow: 0 0 8px hsl(var(--selection) / 0.5);
+  }
+
+  .portal-marker {
+    @apply absolute border-2 rounded-sm;
+    border-color: hsl(var(--portal-color));
+    background: hsl(var(--portal-color) / 0.3);
+  }
+
+  .status-bar {
+    @apply h-6 bg-secondary border-t border-border px-3 flex items-center text-xs text-muted-foreground gap-4;
+  }
+
+  .input-field {
+    @apply bg-muted border border-border rounded-sm px-2 py-1 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-sm hover:bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.8);
+    }
+  }
+}
