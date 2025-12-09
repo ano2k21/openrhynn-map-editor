@@ -99,6 +99,8 @@ export function MapEditor() {
         's': 'spawn',
         'x': 'block',
         't': 'trigger',
+        'm': 'mobPlace',
+        'z': 'zone',
       };
 
       const tool = keyToolMap[e.key.toLowerCase()];

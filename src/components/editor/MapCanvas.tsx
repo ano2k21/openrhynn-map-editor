@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { PlayfieldInfo, Portal, Item, EditorState, CursorPosition } from '@/types/map';
+import { getMobTemplateName } from '@/lib/mobTemplates';
 import { cn } from '@/lib/utils';
 
 const TILE_SIZE = 24;
@@ -275,12 +276,13 @@ export function MapCanvas({
       ctx.textBaseline = 'middle';
       ctx.fillText('💀', mx, my);
       
-      // Draw template ID below
+      // Draw mob name below
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.font = 'bold 8px monospace';
+      ctx.font = 'bold 7px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText(mob.tplId.toString(), mx, my + 12);
+      const mobName = getMobTemplateName(mob.tplId);
+      ctx.fillText(mobName.length > 8 ? mobName.substring(0, 8) + '..' : mobName, mx, my + 12);
     });
 
     // Draw cursor highlight
@@ -347,13 +349,15 @@ export function MapCanvas({
       onPlacePortal(coords.x, coords.y);
     } else if (editorState.tool === 'itemPlace') {
       onPlaceItem(coords.x, coords.y);
+    } else if (editorState.tool === 'mobPlace') {
+      onPlaceMob(coords.x, coords.y);
     } else if (editorState.tool === 'portal') {
       const clickedPortal = playfieldInfo.portals.find(
         p => coords.x >= p.x && coords.x < p.x + p.width && coords.y >= p.y && coords.y < p.y + p.height
       );
       onPortalSelect(clickedPortal || null);
     }
-  }, [editorState.tool, getTileCoords, playfieldInfo.portals, onFill, onPaint, onToggleCollision, onToggleTrigger, onTogglePeaceful, onPortalSelect, onSaveHistory, onSetSpawn, onPlacePortal, onPlaceItem]);
+  }, [editorState.tool, getTileCoords, playfieldInfo.portals, onFill, onPaint, onToggleCollision, onToggleTrigger, onTogglePeaceful, onPortalSelect, onSaveHistory, onSetSpawn, onPlacePortal, onPlaceItem, onPlaceMob]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDragging) {

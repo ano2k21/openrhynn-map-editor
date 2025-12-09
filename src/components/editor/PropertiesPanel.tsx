@@ -3,8 +3,16 @@ import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
 import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
+import { MOB_TEMPLATES, getMobTemplateName } from '@/lib/mobTemplates';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface PropertiesPanelProps {
   playfieldInfo: PlayfieldInfo;
@@ -548,7 +556,7 @@ export function PropertiesPanel({
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1">
                       <Skull size={12} className="text-red-400" />
-                      <span className="text-xs">Mob #{mob.tplId}</span>
+                      <span className="text-xs font-medium">{getMobTemplateName(mob.tplId)}</span>
                     </div>
                     <button
                       onClick={() => onMobSpawnDelete(mob.id)}
@@ -557,42 +565,64 @@ export function PropertiesPanel({
                       <Trash2 size={12} />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-[10px]">
+                  <div className="space-y-1 text-[10px]">
                     <div>
-                      <label className="text-muted-foreground">Object ID</label>
-                      <input
-                        type="number"
-                        value={mob.objectId}
-                        onChange={(e) => onMobSpawnUpdate(mob.id, { objectId: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
+                      <label className="text-muted-foreground">Mob Type</label>
+                      <Select
+                        value={mob.tplId.toString()}
+                        onValueChange={(value) => onMobSpawnUpdate(mob.id, { tplId: parseInt(value) })}
+                      >
+                        <SelectTrigger className="h-6 text-[10px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-48">
+                          {MOB_TEMPLATES.map((template) => (
+                            <SelectItem key={template.id} value={template.id.toString()} className="text-xs">
+                              {template.name} (Lv.{template.level})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <label className="text-muted-foreground">Template ID</label>
-                      <input
-                        type="number"
-                        value={mob.tplId}
-                        onChange={(e) => onMobSpawnUpdate(mob.id, { tplId: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div>
+                        <label className="text-muted-foreground">Object ID</label>
+                        <input
+                          type="number"
+                          value={mob.objectId}
+                          onChange={(e) => onMobSpawnUpdate(mob.id, { objectId: parseInt(e.target.value) || 0 })}
+                          className="input-field w-full text-[10px] py-0.5 px-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-muted-foreground">Template ID</label>
+                        <input
+                          type="number"
+                          value={mob.tplId}
+                          onChange={(e) => onMobSpawnUpdate(mob.id, { tplId: parseInt(e.target.value) || 0 })}
+                          className="input-field w-full text-[10px] py-0.5 px-1"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-muted-foreground">X (tile)</label>
-                      <input
-                        type="number"
-                        value={mob.x}
-                        onChange={(e) => onMobSpawnUpdate(mob.id, { x: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-muted-foreground">Y (tile)</label>
-                      <input
-                        type="number"
-                        value={mob.y}
-                        onChange={(e) => onMobSpawnUpdate(mob.id, { y: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div>
+                        <label className="text-muted-foreground">X (tile)</label>
+                        <input
+                          type="number"
+                          value={mob.x}
+                          onChange={(e) => onMobSpawnUpdate(mob.id, { x: parseInt(e.target.value) || 0 })}
+                          className="input-field w-full text-[10px] py-0.5 px-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-muted-foreground">Y (tile)</label>
+                        <input
+                          type="number"
+                          value={mob.y}
+                          onChange={(e) => onMobSpawnUpdate(mob.id, { y: parseInt(e.target.value) || 0 })}
+                          className="input-field w-full text-[10px] py-0.5 px-1"
+                        />
+                      </div>
                     </div>
                     <div className="col-span-2">
                       <label className="text-muted-foreground">Respawn (ms)</label>
