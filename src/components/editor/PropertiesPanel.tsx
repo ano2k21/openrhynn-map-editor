@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
-import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus, Upload } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus, Upload, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
 import { MOB_TEMPLATES, getMobTemplateName } from '@/lib/mobTemplates';
@@ -13,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PropertiesPanelProps {
   playfieldInfo: PlayfieldInfo;
@@ -57,12 +63,15 @@ export function PropertiesPanel({
 }: PropertiesPanelProps) {
   const [expandedSections, setExpandedSections] = useState({
     map: true,
-    graphics: true,
-    portals: true,
-    spawn: true,
+    graphics: false,
+    portals: false,
+    spawn: false,
     items: false,
     mobs: true,
   });
+  const [expandedMobs, setExpandedMobs] = useState<Set<string>>(new Set());
+  const [expandedPortals, setExpandedPortals] = useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [tilesetPreviews, setTilesetPreviews] = useState<TilesetPreview[]>([]);
   const [worldIdForExport, setWorldIdForExport] = useState(100130);
   const sqlImportRef = useRef<HTMLInputElement>(null);
@@ -133,11 +142,39 @@ export function PropertiesPanel({
     toast.success('Portal JSON copied!');
   };
 
-  return (
-    <div className="panel flex flex-col h-full">
-      <div className="panel-header">Properties</div>
+  const toggleMobExpand = (id: string) => {
+    setExpandedMobs(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
-      <div className="flex-1 overflow-auto scrollbar-thin">
+  const togglePortalExpand = (id: string) => {
+    setExpandedPortals(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleItemExpand = (id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  return (
+    <div className="panel flex flex-col h-full overflow-hidden">
+      <div className="panel-header flex-shrink-0">Properties</div>
+
+      <ScrollArea className="flex-1">
+        <div className="space-y-0">
         {/* Map Section */}
         <div className="border-b border-border">
           <button
@@ -303,382 +340,202 @@ export function PropertiesPanel({
           )}
         </div>
 
-        {/* Items Section */}
+        {/* Items Section - Compact */}
         <div className="border-b border-border">
           <button
             onClick={() => toggleSection('items')}
-            className="w-full px-3 py-2 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
+            className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
           >
             <span className="text-xs font-medium">Items ({playfieldInfo.items.length})</span>
-            {expandedSections.items ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {expandedSections.items ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </button>
           {expandedSections.items && (
-            <div className="px-3 pb-3 space-y-2">
-              <p className="text-[10px] text-muted-foreground mb-2">Use "Dėti daiktą" tool</p>
+            <div className="px-2 pb-2 space-y-1">
               {playfieldInfo.items.map((item) => (
-                <div key={item.id} className="p-2 rounded-sm border border-border">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <Package size={12} className="text-blue-400" />
-                      <span className="text-xs">Item #{item.tplId}</span>
-                    </div>
-                    <button
-                      onClick={() => onItemDelete(item.id)}
-                      className="text-destructive hover:text-destructive/80 p-1"
-                    >
-                      <Trash2 size={12} />
+                <Collapsible key={item.id} open={expandedItems.has(item.id)} onOpenChange={() => toggleItemExpand(item.id)}>
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-muted/50 text-[10px]">
+                    <CollapsibleTrigger className="flex items-center gap-1 flex-1 text-left">
+                      {expandedItems.has(item.id) ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                      <Package size={10} className="text-blue-400" />
+                      <span className="truncate">#{item.tplId} ({item.x},{item.y})</span>
+                    </CollapsibleTrigger>
+                    <button onClick={() => onItemDelete(item.id)} className="text-destructive hover:text-destructive/80 p-0.5">
+                      <Trash2 size={10} />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-[10px]">
-                    <div>
-                      <label className="text-muted-foreground">Template ID</label>
-                      <input
-                        type="number"
-                        value={item.tplId}
-                        onChange={(e) => onItemUpdate(item.id, { tplId: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
+                  <CollapsibleContent>
+                    <div className="pl-4 pr-1 pb-1 grid grid-cols-3 gap-1 text-[9px]">
+                      <div>
+                        <label className="text-muted-foreground">TplID</label>
+                        <input type="number" value={item.tplId} onChange={(e) => onItemUpdate(item.id, { tplId: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" />
+                      </div>
+                      <div>
+                        <label className="text-muted-foreground">X</label>
+                        <input type="number" value={item.x} onChange={(e) => onItemUpdate(item.id, { x: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" />
+                      </div>
+                      <div>
+                        <label className="text-muted-foreground">Y</label>
+                        <input type="number" value={item.y} onChange={(e) => onItemUpdate(item.id, { y: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" />
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-muted-foreground">Units</label>
-                      <input
-                        type="number"
-                        value={item.units}
-                        onChange={(e) => onItemUpdate(item.id, { units: parseInt(e.target.value) || 1 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-muted-foreground">X</label>
-                      <input
-                        type="number"
-                        value={item.x}
-                        onChange={(e) => onItemUpdate(item.id, { x: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-muted-foreground">Y</label>
-                      <input
-                        type="number"
-                        value={item.y}
-                        onChange={(e) => onItemUpdate(item.id, { y: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-muted-foreground">Respawn (s)</label>
-                      <input
-                        type="number"
-                        value={item.respawnDelay}
-                        onChange={(e) => onItemUpdate(item.id, { respawnDelay: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                  </div>
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
-              {playfieldInfo.items.length === 0 && (
-                <p className="text-xs text-muted-foreground">No items</p>
-              )}
+              {playfieldInfo.items.length === 0 && <p className="text-[10px] text-muted-foreground px-1">No items</p>}
             </div>
           )}
         </div>
 
-        {/* Portals Section */}
+        {/* Portals Section - Compact */}
         <div className="border-b border-border">
           <button
             onClick={() => toggleSection('portals')}
-            className="w-full px-3 py-2 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
+            className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
           >
             <span className="text-xs font-medium">Portals ({playfieldInfo.portals.length})</span>
-            {expandedSections.portals ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {expandedSections.portals ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </button>
           {expandedSections.portals && (
-            <div className="px-3 pb-3 space-y-2">
-              <p className="text-[10px] text-muted-foreground mb-2">Use "Dėti portalą" tool</p>
-
+            <div className="px-2 pb-2 space-y-1">
               {playfieldInfo.portals.map((portal) => (
-                <div
-                  key={portal.id}
-                  className={cn(
-                    'p-2 rounded-sm border transition-colors',
-                    selectedPortal?.id === portal.id
-                      ? 'border-yellow-400 bg-yellow-400/10'
-                      : 'border-border hover:border-muted-foreground'
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <Zap size={12} className="text-yellow-400" />
-                      <input
-                        type="text"
-                        value={portal.name}
-                        onChange={(e) => onPortalUpdate(portal.id, { name: e.target.value })}
-                        className="input-field text-xs py-0.5 px-1 w-20"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => copyPortalJson(portal)}
-                        className="text-muted-foreground hover:text-foreground p-1"
-                        title="Kopijuoti JSON"
-                      >
-                        <Copy size={12} />
-                      </button>
-                      <button
-                        onClick={() => onPortalDelete(portal.id)}
-                        className="text-destructive hover:text-destructive/80 p-1"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
+                <Collapsible key={portal.id} open={expandedPortals.has(portal.id)} onOpenChange={() => togglePortalExpand(portal.id)}>
+                  <div className={cn(
+                    "flex items-center gap-1 px-1 py-0.5 rounded text-[10px]",
+                    selectedPortal?.id === portal.id ? 'bg-yellow-400/20' : 'hover:bg-muted/50'
+                  )}>
+                    <CollapsibleTrigger className="flex items-center gap-1 flex-1 text-left">
+                      {expandedPortals.has(portal.id) ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                      <Zap size={10} className="text-yellow-400" />
+                      <span className="truncate">{portal.name} → {portal.targetPlayfieldId}</span>
+                    </CollapsibleTrigger>
+                    <button onClick={() => copyPortalJson(portal)} className="text-muted-foreground hover:text-foreground p-0.5" title="Copy JSON">
+                      <Copy size={10} />
+                    </button>
+                    <button onClick={() => onPortalDelete(portal.id)} className="text-destructive hover:text-destructive/80 p-0.5">
+                      <Trash2 size={10} />
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-[10px]">
-                    <div>
-                      <label className="text-muted-foreground">Cell X</label>
-                      <input
-                        type="number"
-                        value={portal.x}
-                        onChange={(e) => onPortalUpdate(portal.id, { x: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
+                  <CollapsibleContent>
+                    <div className="pl-4 pr-1 pb-1 space-y-1 text-[9px]">
+                      <input type="text" value={portal.name} onChange={(e) => onPortalUpdate(portal.id, { name: e.target.value })} className="input-field w-full text-[9px] py-0 px-1 h-5" placeholder="Name" />
+                      <div className="grid grid-cols-3 gap-1">
+                        <div><label className="text-muted-foreground">X</label><input type="number" value={portal.x} onChange={(e) => onPortalUpdate(portal.id, { x: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                        <div><label className="text-muted-foreground">Y</label><input type="number" value={portal.y} onChange={(e) => onPortalUpdate(portal.id, { y: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                        <div><label className="text-muted-foreground">Target</label><input type="number" value={portal.targetPlayfieldId} onChange={(e) => onPortalUpdate(portal.id, { targetPlayfieldId: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-muted-foreground">Cell Y</label>
-                      <input
-                        type="number"
-                        value={portal.y}
-                        onChange={(e) => onPortalUpdate(portal.id, { y: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 text-[10px] mt-1">
-                    <div>
-                      <label className="text-muted-foreground">Target ID</label>
-                      <input
-                        type="number"
-                        value={portal.targetPlayfieldId}
-                        onChange={(e) => onPortalUpdate(portal.id, { targetPlayfieldId: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-muted-foreground">Target X</label>
-                      <input
-                        type="number"
-                        value={portal.targetX}
-                        onChange={(e) => onPortalUpdate(portal.id, { targetX: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-muted-foreground">Target Y</label>
-                      <input
-                        type="number"
-                        value={portal.targetY}
-                        onChange={(e) => onPortalUpdate(portal.id, { targetY: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                  </div>
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
-              {playfieldInfo.portals.length === 0 && (
-                <p className="text-xs text-muted-foreground">No portals</p>
-              )}
+              {playfieldInfo.portals.length === 0 && <p className="text-[10px] text-muted-foreground px-1">No portals</p>}
             </div>
           )}
         </div>
 
-        {/* Mob Spawns Section */}
+        {/* Mob Spawns Section - Compact */}
         <div className="border-b border-border">
           <button
             onClick={() => toggleSection('mobs')}
-            className="w-full px-3 py-2 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
+            className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
           >
-            <span className="text-xs font-medium">Mob Spawns ({playfieldInfo.mobSpawns.length})</span>
-            {expandedSections.mobs ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <span className="text-xs font-medium">Mobs ({playfieldInfo.mobSpawns.length})</span>
+            {expandedSections.mobs ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </button>
           {expandedSections.mobs && (
-            <div className="px-3 pb-3 space-y-2">
-              {/* Add mob button */}
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full text-xs h-7"
-                onClick={() => onMobSpawnAdd({
+            <div className="px-2 pb-2 space-y-1">
+              {/* Controls row */}
+              <div className="flex items-center gap-1 mb-1">
+                <Button size="sm" variant="outline" className="text-[10px] h-6 px-2 flex-1" onClick={() => onMobSpawnAdd({
                   objectId: 100000 + playfieldInfo.mobSpawns.length,
                   tplId: 100000,
                   x: Math.floor(playfieldInfo.width / 2),
                   y: Math.floor(playfieldInfo.height / 2),
                   respawnDelay: 60000,
-                })}
-              >
-                <Plus size={12} className="mr-1" />
-                Pridėti mobą
-              </Button>
-
-              {/* Import/Export SQL */}
-              <div className="flex items-center gap-1">
-                <div className="flex-1">
-                  <label className="block text-[10px] text-muted-foreground mb-1">World ID</label>
-                  <input
-                    type="number"
-                    value={worldIdForExport}
-                    onChange={(e) => setWorldIdForExport(parseInt(e.target.value) || 100130)}
-                    className="input-field w-full text-[10px] py-0.5 px-1"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs h-7 mt-4"
-                  onClick={() => sqlImportRef.current?.click()}
-                  title="Importuoti mobus iš SQL"
-                >
+                })}>
+                  <Plus size={10} className="mr-1" />Add
+                </Button>
+                <input
+                  type="number"
+                  value={worldIdForExport}
+                  onChange={(e) => setWorldIdForExport(parseInt(e.target.value) || 100130)}
+                  className="input-field w-16 text-[10px] py-0 px-1 h-6"
+                  title="World ID"
+                />
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => sqlImportRef.current?.click()} title="Import SQL">
                   <Upload size={12} />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="text-xs h-7 mt-4"
-                  onClick={() => {
-                    const sql = onExportMobSpawnsSql(worldIdForExport);
-                    const blob = new Blob([sql], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `mob_spawning_${worldIdForExport}.sql`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    toast.success(`Eksportuota ${playfieldInfo.mobSpawns.length} mobų SQL`);
-                  }}
-                  disabled={playfieldInfo.mobSpawns.length === 0}
-                >
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => {
+                  const sql = onExportMobSpawnsSql(worldIdForExport);
+                  const blob = new Blob([sql], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `mob_spawning_${worldIdForExport}.sql`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success(`Exported ${playfieldInfo.mobSpawns.length} mobs`);
+                }} disabled={playfieldInfo.mobSpawns.length === 0} title="Export SQL">
                   <Download size={12} />
                 </Button>
               </div>
 
-              {/* Hidden SQL file input */}
-              <input
-                ref={sqlImportRef}
-                type="file"
-                accept=".sql,.txt"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      const sqlContent = event.target?.result as string;
-                      const count = onImportMobSpawnsSql(sqlContent, worldIdForExport);
-                      if (count > 0) {
-                        toast.success(`Importuota ${count} mobų iš SQL (world_id: ${worldIdForExport})`);
-                      } else {
-                        toast.warning(`Nerasta mobų su world_id: ${worldIdForExport}`);
-                      }
-                    };
-                    reader.readAsText(file);
-                    e.target.value = '';
-                  }
-                }}
-              />
+              <input ref={sqlImportRef} type="file" accept=".sql,.txt" className="hidden" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const sqlContent = event.target?.result as string;
+                    const count = onImportMobSpawnsSql(sqlContent, worldIdForExport);
+                    if (count > 0) toast.success(`Imported ${count} mobs (world_id: ${worldIdForExport})`);
+                    else toast.warning(`No mobs found for world_id: ${worldIdForExport}`);
+                  };
+                  reader.readAsText(file);
+                  e.target.value = '';
+                }
+              }} />
 
-              {/* Mob list */}
-              {playfieldInfo.mobSpawns.map((mob) => (
-                <div key={mob.id} className="p-2 rounded-sm border border-border">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <Skull size={12} className="text-red-400" />
-                      <span className="text-xs font-medium">{getMobTemplateName(mob.tplId)}</span>
+              {/* Mob list - compact */}
+              <div className="space-y-0.5 max-h-[300px] overflow-y-auto">
+                {playfieldInfo.mobSpawns.map((mob) => (
+                  <Collapsible key={mob.id} open={expandedMobs.has(mob.id)} onOpenChange={() => toggleMobExpand(mob.id)}>
+                    <div className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-muted/50 text-[10px]">
+                      <CollapsibleTrigger className="flex items-center gap-1 flex-1 text-left">
+                        {expandedMobs.has(mob.id) ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                        <Skull size={10} className="text-red-400" />
+                        <span className="truncate">{getMobTemplateName(mob.tplId)}</span>
+                        <span className="text-muted-foreground">({mob.x},{mob.y})</span>
+                      </CollapsibleTrigger>
+                      <button onClick={() => onMobSpawnDelete(mob.id)} className="text-destructive hover:text-destructive/80 p-0.5">
+                        <Trash2 size={10} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => onMobSpawnDelete(mob.id)}
-                      className="text-destructive hover:text-destructive/80 p-1"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                  <div className="space-y-1 text-[10px]">
-                    <div>
-                      <label className="text-muted-foreground">Mob Type</label>
-                      <Select
-                        value={mob.tplId.toString()}
-                        onValueChange={(value) => onMobSpawnUpdate(mob.id, { tplId: parseInt(value) })}
-                      >
-                        <SelectTrigger className="h-6 text-[10px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-48">
-                          {MOB_TEMPLATES.map((template) => (
-                            <SelectItem key={template.id} value={template.id.toString()} className="text-xs">
-                              {template.name} (Lv.{template.level})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1">
-                      <div>
-                        <label className="text-muted-foreground">Object ID</label>
-                        <input
-                          type="number"
-                          value={mob.objectId}
-                          onChange={(e) => onMobSpawnUpdate(mob.id, { objectId: parseInt(e.target.value) || 0 })}
-                          className="input-field w-full text-[10px] py-0.5 px-1"
-                        />
+                    <CollapsibleContent>
+                      <div className="pl-4 pr-1 pb-1 space-y-1 text-[9px]">
+                        <Select value={mob.tplId.toString()} onValueChange={(value) => onMobSpawnUpdate(mob.id, { tplId: parseInt(value) })}>
+                          <SelectTrigger className="h-5 text-[9px]"><SelectValue /></SelectTrigger>
+                          <SelectContent className="max-h-40 bg-popover">
+                            {MOB_TEMPLATES.map((t) => (
+                              <SelectItem key={t.id} value={t.id.toString()} className="text-[10px]">{t.name} (Lv.{t.level})</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="grid grid-cols-4 gap-1">
+                          <div><label className="text-muted-foreground">ObjID</label><input type="number" value={mob.objectId} onChange={(e) => onMobSpawnUpdate(mob.id, { objectId: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                          <div><label className="text-muted-foreground">X</label><input type="number" value={mob.x} onChange={(e) => onMobSpawnUpdate(mob.id, { x: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                          <div><label className="text-muted-foreground">Y</label><input type="number" value={mob.y} onChange={(e) => onMobSpawnUpdate(mob.id, { y: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                          <div><label className="text-muted-foreground">Resp</label><input type="number" value={mob.respawnDelay} onChange={(e) => onMobSpawnUpdate(mob.id, { respawnDelay: parseInt(e.target.value) || 0 })} className="input-field w-full text-[9px] py-0 px-1 h-5" /></div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-muted-foreground">Template ID</label>
-                        <input
-                          type="number"
-                          value={mob.tplId}
-                          onChange={(e) => onMobSpawnUpdate(mob.id, { tplId: parseInt(e.target.value) || 0 })}
-                          className="input-field w-full text-[10px] py-0.5 px-1"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1">
-                      <div>
-                        <label className="text-muted-foreground">X (tile)</label>
-                        <input
-                          type="number"
-                          value={mob.x}
-                          onChange={(e) => onMobSpawnUpdate(mob.id, { x: parseInt(e.target.value) || 0 })}
-                          className="input-field w-full text-[10px] py-0.5 px-1"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-muted-foreground">Y (tile)</label>
-                        <input
-                          type="number"
-                          value={mob.y}
-                          onChange={(e) => onMobSpawnUpdate(mob.id, { y: parseInt(e.target.value) || 0 })}
-                          className="input-field w-full text-[10px] py-0.5 px-1"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-muted-foreground">Respawn (ms)</label>
-                      <input
-                        type="number"
-                        value={mob.respawnDelay}
-                        onChange={(e) => onMobSpawnUpdate(mob.id, { respawnDelay: parseInt(e.target.value) || 0 })}
-                        className="input-field w-full text-[10px] py-0.5 px-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {playfieldInfo.mobSpawns.length === 0 && (
-                <p className="text-xs text-muted-foreground">Nėra mobų</p>
-              )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+              </div>
+              {playfieldInfo.mobSpawns.length === 0 && <p className="text-[10px] text-muted-foreground px-1">No mobs</p>}
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 }
