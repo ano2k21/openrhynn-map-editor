@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { PlayfieldInfo, Portal, Item, EditorState, Tool } from '@/types/map';
+import { PlayfieldInfo, Portal, Item, MobSpawn, EditorState, Tool } from '@/types/map';
 import { loadMultipleTilesets, LoadedTileset, getTileFromCombinedTilesets } from '@/lib/rhynnTiles';
 
 const TILE_SIZE = 24;
@@ -13,6 +13,7 @@ export function useMapEditor() {
     graphicsIds: [100127], // Default: back_grass_human_01.png
     portals: [],
     items: [],
+    mobSpawns: [],
     spawnX: 5,
     spawnY: 5,
     pvpEnabled: false,
@@ -414,6 +415,60 @@ export function useMapEditor() {
     }));
   }, []);
 
+  // Mob spawn management
+  const addMobSpawn = useCallback((mobSpawn: Omit<MobSpawn, 'id'>) => {
+    const newMobSpawn: MobSpawn = {
+      ...mobSpawn,
+      id: `mob_${Date.now()}`,
+    };
+    setPlayfieldInfo(prev => ({
+      ...prev,
+      mobSpawns: [...prev.mobSpawns, newMobSpawn],
+    }));
+  }, []);
+
+  const updateMobSpawn = useCallback((id: string, updates: Partial<MobSpawn>) => {
+    setPlayfieldInfo(prev => ({
+      ...prev,
+      mobSpawns: prev.mobSpawns.map(m => m.id === id ? { ...m, ...updates } : m),
+    }));
+  }, []);
+
+  const deleteMobSpawn = useCallback((id: string) => {
+    setPlayfieldInfo(prev => ({
+      ...prev,
+      mobSpawns: prev.mobSpawns.filter(m => m.id !== id),
+    }));
+  }, []);
+
+  // Export mob spawns as SQL for MySQL
+  const exportMobSpawnsSql = useCallback((worldId: number): string => {
+    const currentPlayfieldInfo = playfieldInfoRef.current;
+    const TILE_SIZE = 24;
+    
+    if (currentPlayfieldInfo.mobSpawns.length === 0) {
+      return '-- No mob spawns to export';
+    }
+    
+    let sql = `-- Mob spawns for world_id: ${worldId}\n`;
+    sql += `-- Map: ${currentPlayfieldInfo.name}\n`;
+    sql += `-- Generated: ${new Date().toISOString()}\n\n`;
+    sql += `DELETE FROM mob_spawning WHERE world_id = ${worldId};\n\n`;
+    sql += `INSERT INTO mob_spawning (object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay) VALUES\n`;
+    
+    const values = currentPlayfieldInfo.mobSpawns.map((mob, index) => {
+      // Convert tile coordinates to pixel coordinates (center of tile)
+      const pixelX = mob.x * TILE_SIZE + TILE_SIZE / 2;
+      const pixelY = mob.y * TILE_SIZE + TILE_SIZE / 2;
+      const isLast = index === currentPlayfieldInfo.mobSpawns.length - 1;
+      return `(${mob.objectId}, ${mob.tplId}, ${worldId}, ${pixelX}, ${pixelY}, ${mob.respawnDelay})${isLast ? ';' : ','}`;
+    });
+    
+    sql += values.join('\n');
+    
+    return sql;
+  }, []);
+
   const resizeMap = useCallback((newWidth: number, newHeight: number) => {
     const newMapData = mapData.map(layer => {
       const newLayer = new Array(newWidth * newHeight).fill(0);
@@ -696,6 +751,7 @@ export function useMapEditor() {
           respawnDelay: item.respawn_delay || 0,
           units: item.units || 1,
         })),
+        mobSpawns: [],
       };
       
       console.log(`📥 Parsed: ${newInfo.portals.length} portals, ${newInfo.items.length} items, spawn at (${newInfo.spawnX}, ${newInfo.spawnY})`);
@@ -755,6 +811,7 @@ export function useMapEditor() {
       graphicsIds,
       portals: [],
       items: [],
+      mobSpawns: [],
       spawnX: Math.floor(width / 2),
       spawnY: Math.floor(height / 2),
       pvpEnabled: false,
@@ -820,6 +877,10 @@ export function useMapEditor() {
     addItem,
     updateItem,
     deleteItem,
+    addMobSpawn,
+    updateMobSpawn,
+    deleteMobSpawn,
+    exportMobSpawnsSql,
     resizeMap,
     exportDataBin,
     importDataBin,

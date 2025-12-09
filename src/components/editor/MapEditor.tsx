@@ -6,7 +6,7 @@ import { MapCanvas } from './MapCanvas';
 import { PropertiesPanel } from './PropertiesPanel';
 import { FileMenu } from './FileMenu';
 import { StatusBar } from './StatusBar';
-import { Portal, CursorPosition, Tool } from '@/types/map';
+import { Portal, MobSpawn, CursorPosition, Tool } from '@/types/map';
 import { Map } from 'lucide-react';
 
 export function MapEditor() {
@@ -42,6 +42,10 @@ export function MapEditor() {
     addItem,
     updateItem,
     deleteItem,
+    addMobSpawn,
+    updateMobSpawn,
+    deleteMobSpawn,
+    exportMobSpawnsSql,
     resizeMap,
     exportDataBin,
     importDataBin,
@@ -141,6 +145,16 @@ export function MapEditor() {
       units: 1,
     });
   }, [addItem]);
+
+  const handlePlaceMob = useCallback((x: number, y: number) => {
+    addMobSpawn({
+      objectId: 100000 + playfieldInfo.mobSpawns.length,
+      tplId: 100000,
+      x,
+      y,
+      respawnDelay: 60000,
+    });
+  }, [addMobSpawn, playfieldInfo.mobSpawns.length]);
 
   const handleSelectTile = useCallback((localIndex: number) => {
     // localIndex is 0-based, we store 1-based for tiles (0 = empty)
@@ -258,6 +272,7 @@ export function MapEditor() {
           onSetSpawn={handleSetSpawn}
           onPlacePortal={handlePlacePortal}
           onPlaceItem={handlePlaceItem}
+          onPlaceMob={handlePlaceMob}
           onCursorMove={setCursorPosition}
         />
 
@@ -273,6 +288,10 @@ export function MapEditor() {
             onPortalAdd={addPortal}
             onItemUpdate={updateItem}
             onItemDelete={deleteItem}
+            onMobSpawnAdd={addMobSpawn}
+            onMobSpawnUpdate={updateMobSpawn}
+            onMobSpawnDelete={deleteMobSpawn}
+            onExportMobSpawnsSql={exportMobSpawnsSql}
             onLoadTilesets={loadTilesets}
           />
         </div>

@@ -22,6 +22,7 @@ interface MapCanvasProps {
   onSetSpawn: (x: number, y: number) => void;
   onPlacePortal: (x: number, y: number) => void;
   onPlaceItem: (x: number, y: number) => void;
+  onPlaceMob: (x: number, y: number) => void;
   onCursorMove: (pos: CursorPosition | null) => void;
 }
 
@@ -43,6 +44,7 @@ export function MapCanvas({
   onSetSpawn,
   onPlacePortal,
   onPlaceItem,
+  onPlaceMob,
   onCursorMove,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -252,11 +254,41 @@ export function MapCanvas({
       });
     }
 
+    // Draw mob spawns - skull icon
+    playfieldInfo.mobSpawns.forEach((mob) => {
+      const mx = mob.x * TILE_SIZE + TILE_SIZE / 2;
+      const my = mob.y * TILE_SIZE + TILE_SIZE / 2;
+      
+      // Draw skull background circle
+      ctx.fillStyle = 'rgba(255, 50, 50, 0.9)';
+      ctx.beginPath();
+      ctx.arc(mx, my, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Draw skull emoji
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💀', mx, my);
+      
+      // Draw template ID below
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(mob.tplId.toString(), mx, my + 12);
+    });
+
     // Draw cursor highlight
-    if (mousePos && (editorState.tool === 'brush' || editorState.tool === 'eraser' || editorState.tool === 'fill' || editorState.tool === 'portalPlace' || editorState.tool === 'itemPlace' || editorState.tool === 'block' || editorState.tool === 'trigger' || editorState.tool === 'zone')) {
+    if (mousePos && (editorState.tool === 'brush' || editorState.tool === 'eraser' || editorState.tool === 'fill' || editorState.tool === 'portalPlace' || editorState.tool === 'itemPlace' || editorState.tool === 'mobPlace' || editorState.tool === 'block' || editorState.tool === 'trigger' || editorState.tool === 'zone')) {
       ctx.strokeStyle = editorState.tool === 'eraser' ? 'rgba(255, 100, 100, 0.8)' : 
                        editorState.tool === 'portalPlace' ? 'rgba(255, 220, 50, 0.8)' :
                        editorState.tool === 'itemPlace' ? 'rgba(100, 200, 255, 0.8)' :
+                       editorState.tool === 'mobPlace' ? 'rgba(255, 50, 50, 0.8)' :
                        editorState.tool === 'block' ? 'rgba(255, 50, 50, 0.8)' :
                        editorState.tool === 'trigger' ? 'rgba(200, 50, 255, 0.8)' :
                        editorState.tool === 'zone' ? 'rgba(50, 200, 100, 0.8)' :

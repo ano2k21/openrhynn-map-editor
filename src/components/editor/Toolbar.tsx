@@ -14,7 +14,8 @@ import {
   Package,
   Ban,
   Sparkles,
-  Shield
+  Shield,
+  Skull
 } from 'lucide-react';
 import { Tool } from '@/types/map';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ const tools: { id: Tool; icon: React.ReactNode; label: string; shortcut?: string
   { id: 'portal', icon: <MapPin size={18} />, label: 'Pasirinkti portalą', shortcut: 'P' },
   { id: 'portalPlace', icon: <Zap size={18} />, label: 'Dėti portalą' },
   { id: 'itemPlace', icon: <Package size={18} />, label: 'Dėti daiktą' },
+  { id: 'mobPlace', icon: <Skull size={18} />, label: 'Dėti mobą', shortcut: 'M' },
   { id: 'spawn', icon: <Target size={18} />, label: 'Atsiradimo taškas', shortcut: 'S' },
 ];
 
