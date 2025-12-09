@@ -447,11 +447,21 @@ export function useMapEditor() {
         
         // RHYNN FORMAT (4-bit trigger for client animation compatibility):
         // Byte 0: trigger (top 4 bits) + function (bottom 4 bits)
-        // function: 0x01 = blocked, 0x02 = peaceful
+        // function: 0x01 = blocked, 0x02 = peaceful (safe zone, no PvP)
         // trigger: value 1 = portal animation (lightning)
         const collision = currentCollisionData[cellIndex] || 0;
         const trigger = currentTriggerData[cellIndex] || 0;
-        const functionValue = collision > 0 ? 0x01 : 0x00;
+        
+        // Determine function value:
+        // - 0x02 = peaceful (safe zone) - if pvpEnabled is false
+        // - 0x01 = blocked - if collision is set
+        // - 0x00 = normal (can fight)
+        let functionValue = 0x00;
+        if (collision > 0) {
+          functionValue = 0x01; // blocked
+        } else if (!currentPlayfieldInfo.pvpEnabled) {
+          functionValue = 0x02; // peaceful/safe zone
+        }
         
         // Format: (trigger << 4) | (function & 0x0F) - 4-bit trigger for client compatibility
         view[dataIndex] = ((trigger & 0x0F) << 4) | (functionValue & 0x0F);
