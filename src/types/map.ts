@@ -23,10 +23,11 @@ export interface Item {
 
 export interface MobSpawn {
   id: string;
-  mobTemplateId: number;
-  x: number;
-  y: number;
-  respawnTime: number;
+  objectId: number;      // object_id - unique mob instance ID
+  tplId: number;         // tpl_id - mob template ID
+  x: number;             // spawn_x - pixel X coordinate
+  y: number;             // spawn_y - pixel Y coordinate
+  respawnDelay: number;  // respawn_delay - in milliseconds
 }
 
 // Rhynn playfield info.json format
@@ -44,7 +45,7 @@ export interface PlayfieldInfo {
   spawnY?: number;
   portals: Portal[];
   items: Item[];
-  mobSpawns?: MobSpawn[];
+  mobSpawns: MobSpawn[];
 }
 
 export interface Tile {
@@ -60,7 +61,7 @@ export interface TilesetTile {
   image: ImageData | null;
 }
 
-export type Tool = 'select' | 'brush' | 'eraser' | 'fill' | 'portal' | 'spawn' | 'item' | 'portalPlace' | 'itemPlace' | 'block' | 'trigger' | 'zone';
+export type Tool = 'select' | 'brush' | 'eraser' | 'fill' | 'portal' | 'spawn' | 'item' | 'portalPlace' | 'itemPlace' | 'mobPlace' | 'block' | 'trigger' | 'zone';
 
 export interface EditorState {
   tool: Tool;

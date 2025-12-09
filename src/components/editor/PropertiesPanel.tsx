@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { PlayfieldInfo, Portal, Item } from '@/types/map';
-import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy } from 'lucide-react';
+import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
+import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 interface PropertiesPanelProps {
   playfieldInfo: PlayfieldInfo;
@@ -15,6 +16,10 @@ interface PropertiesPanelProps {
   onPortalAdd: (portal: Omit<Portal, 'id'>) => void;
   onItemUpdate: (id: string, updates: Partial<Item>) => void;
   onItemDelete: (id: string) => void;
+  onMobSpawnAdd: (mobSpawn: Omit<MobSpawn, 'id'>) => void;
+  onMobSpawnUpdate: (id: string, updates: Partial<MobSpawn>) => void;
+  onMobSpawnDelete: (id: string) => void;
+  onExportMobSpawnsSql: (worldId: number) => string;
   onLoadTilesets: (graphicsIds: number[]) => void;
 }
 
@@ -34,6 +39,10 @@ export function PropertiesPanel({
   onPortalAdd,
   onItemUpdate,
   onItemDelete,
+  onMobSpawnAdd,
+  onMobSpawnUpdate,
+  onMobSpawnDelete,
+  onExportMobSpawnsSql,
   onLoadTilesets,
 }: PropertiesPanelProps) {
   const [expandedSections, setExpandedSections] = useState({
@@ -42,8 +51,10 @@ export function PropertiesPanel({
     portals: true,
     spawn: true,
     items: false,
+    mobs: true,
   });
   const [tilesetPreviews, setTilesetPreviews] = useState<TilesetPreview[]>([]);
+  const [worldIdForExport, setWorldIdForExport] = useState(100130);
 
   // Load tileset previews
   useEffect(() => {
@@ -465,6 +476,138 @@ export function PropertiesPanel({
               ))}
               {playfieldInfo.portals.length === 0 && (
                 <p className="text-xs text-muted-foreground">No portals</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Mob Spawns Section */}
+        <div className="border-b border-border">
+          <button
+            onClick={() => toggleSection('mobs')}
+            className="w-full px-3 py-2 flex items-center justify-between hover:bg-secondary/50 transition-colors text-left"
+          >
+            <span className="text-xs font-medium">Mob Spawns ({playfieldInfo.mobSpawns.length})</span>
+            {expandedSections.mobs ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </button>
+          {expandedSections.mobs && (
+            <div className="px-3 pb-3 space-y-2">
+              {/* Add mob button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full text-xs h-7"
+                onClick={() => onMobSpawnAdd({
+                  objectId: 100000 + playfieldInfo.mobSpawns.length,
+                  tplId: 100000,
+                  x: Math.floor(playfieldInfo.width / 2),
+                  y: Math.floor(playfieldInfo.height / 2),
+                  respawnDelay: 60000,
+                })}
+              >
+                <Plus size={12} className="mr-1" />
+                Pridėti mobą
+              </Button>
+
+              {/* Export SQL */}
+              <div className="flex items-center gap-1">
+                <div className="flex-1">
+                  <label className="block text-[10px] text-muted-foreground mb-1">World ID</label>
+                  <input
+                    type="number"
+                    value={worldIdForExport}
+                    onChange={(e) => setWorldIdForExport(parseInt(e.target.value) || 100130)}
+                    className="input-field w-full text-[10px] py-0.5 px-1"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="text-xs h-7 mt-4"
+                  onClick={() => {
+                    const sql = onExportMobSpawnsSql(worldIdForExport);
+                    const blob = new Blob([sql], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `mob_spawning_${worldIdForExport}.sql`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success(`Eksportuota ${playfieldInfo.mobSpawns.length} mobų SQL`);
+                  }}
+                  disabled={playfieldInfo.mobSpawns.length === 0}
+                >
+                  <Download size={12} className="mr-1" />
+                  SQL
+                </Button>
+              </div>
+
+              {/* Mob list */}
+              {playfieldInfo.mobSpawns.map((mob) => (
+                <div key={mob.id} className="p-2 rounded-sm border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1">
+                      <Skull size={12} className="text-red-400" />
+                      <span className="text-xs">Mob #{mob.tplId}</span>
+                    </div>
+                    <button
+                      onClick={() => onMobSpawnDelete(mob.id)}
+                      className="text-destructive hover:text-destructive/80 p-1"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-[10px]">
+                    <div>
+                      <label className="text-muted-foreground">Object ID</label>
+                      <input
+                        type="number"
+                        value={mob.objectId}
+                        onChange={(e) => onMobSpawnUpdate(mob.id, { objectId: parseInt(e.target.value) || 0 })}
+                        className="input-field w-full text-[10px] py-0.5 px-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-muted-foreground">Template ID</label>
+                      <input
+                        type="number"
+                        value={mob.tplId}
+                        onChange={(e) => onMobSpawnUpdate(mob.id, { tplId: parseInt(e.target.value) || 0 })}
+                        className="input-field w-full text-[10px] py-0.5 px-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-muted-foreground">X (tile)</label>
+                      <input
+                        type="number"
+                        value={mob.x}
+                        onChange={(e) => onMobSpawnUpdate(mob.id, { x: parseInt(e.target.value) || 0 })}
+                        className="input-field w-full text-[10px] py-0.5 px-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-muted-foreground">Y (tile)</label>
+                      <input
+                        type="number"
+                        value={mob.y}
+                        onChange={(e) => onMobSpawnUpdate(mob.id, { y: parseInt(e.target.value) || 0 })}
+                        className="input-field w-full text-[10px] py-0.5 px-1"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-muted-foreground">Respawn (ms)</label>
+                      <input
+                        type="number"
+                        value={mob.respawnDelay}
+                        onChange={(e) => onMobSpawnUpdate(mob.id, { respawnDelay: parseInt(e.target.value) || 0 })}
+                        className="input-field w-full text-[10px] py-0.5 px-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {playfieldInfo.mobSpawns.length === 0 && (
+                <p className="text-xs text-muted-foreground">Nėra mobų</p>
               )}
             </div>
           )}
