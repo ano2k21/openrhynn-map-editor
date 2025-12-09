@@ -15,6 +15,7 @@ export function MapEditor() {
     setPlayfieldInfo,
     mapData,
     collisionData,
+    peacefulData,
     triggerData,
     editorState,
     loadedTilesets,
@@ -34,6 +35,7 @@ export function MapEditor() {
     floodFill,
     toggleCollisionAt,
     toggleTriggerAt,
+    togglePeacefulAt,
     addPortal,
     updatePortal,
     deletePortal,
@@ -242,6 +244,7 @@ export function MapEditor() {
           playfieldInfo={playfieldInfo}
           mapData={mapData}
           collisionData={collisionData}
+          peacefulData={peacefulData}
           triggerData={triggerData}
           editorState={editorState}
           getTile={getTile}
@@ -249,6 +252,7 @@ export function MapEditor() {
           onFill={floodFill}
           onToggleCollision={toggleCollisionAt}
           onToggleTrigger={toggleTriggerAt}
+          onTogglePeaceful={togglePeacefulAt}
           onSaveHistory={saveToHistory}
           onPortalSelect={setSelectedPortal}
           onSetSpawn={handleSetSpawn}

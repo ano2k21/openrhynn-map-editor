@@ -51,6 +51,7 @@ const tools: { id: Tool; icon: React.ReactNode; label: string; shortcut?: string
   { id: 'fill', icon: <PaintBucket size={18} />, label: 'Užpildyti', shortcut: 'F' },
   { id: 'block', icon: <Ban size={18} />, label: 'Blokuoti/Atblokuoti', shortcut: 'X' },
   { id: 'trigger', icon: <Sparkles size={18} />, label: 'Trigger (animacija)', shortcut: 'T' },
+  { id: 'zone', icon: <Shield size={18} />, label: 'Safe/Fight zona', shortcut: 'Z' },
   { id: 'portal', icon: <MapPin size={18} />, label: 'Pasirinkti portalą', shortcut: 'P' },
   { id: 'portalPlace', icon: <Zap size={18} />, label: 'Dėti portalą' },
   { id: 'itemPlace', icon: <Package size={18} />, label: 'Dėti daiktą' },

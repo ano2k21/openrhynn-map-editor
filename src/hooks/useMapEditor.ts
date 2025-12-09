@@ -31,6 +31,12 @@ export function useMapEditor() {
     return new Array(40 * 30).fill(0);
   });
 
+  // Peaceful data: 0 = fight zone, 1 = safe zone (per-cell)
+  // In data.bin: function 0x02 = peaceful
+  const [peacefulData, setPeacefulData] = useState<number[]>(() => {
+    return new Array(40 * 30).fill(1); // Default: safe zone
+  });
+
   // Trigger data: 0 = none, 15 (0x0F) = default trigger (portal animation)
   // CLIENT uses hasTrigger(15) which checks if (triggerValue & 15) == 15
   // So we need to store 15 (all 4 bits set) for portal animations to show
@@ -43,12 +49,14 @@ export function useMapEditor() {
   // Refs to always have latest data in export (avoids stale closures)
   const mapDataRef = useRef(mapData);
   const collisionDataRef = useRef(collisionData);
+  const peacefulDataRef = useRef(peacefulData);
   const triggerDataRef = useRef(triggerData);
   const playfieldInfoRef = useRef(playfieldInfo);
 
   // Synchronously update refs when state changes
   mapDataRef.current = mapData;
   collisionDataRef.current = collisionData;
+  peacefulDataRef.current = peacefulData;
   triggerDataRef.current = triggerData;
   playfieldInfoRef.current = playfieldInfo;
 
@@ -196,6 +204,21 @@ export function useMapEditor() {
       
       console.log(`⚡ TOGGLE RESULT: index=${index} was=${oldValue} now=${newValue} total=${newData.filter(v => v > 0).length}`);
       
+      return newData;
+    });
+  }, []);
+
+  const togglePeacefulAt = useCallback((x: number, y: number) => {
+    const width = playfieldInfoRef.current.width;
+    const height = playfieldInfoRef.current.height;
+    
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
+    
+    const index = y * width + x;
+    setPeacefulData(prev => {
+      const newData = [...prev];
+      newData[index] = newData[index] > 0 ? 0 : 1;
+      console.log(`🛡️ Toggle peaceful at (${x}, ${y}): ${newData[index] > 0 ? 'SAFE' : 'FIGHT'}`);
       return newData;
     });
   }, []);
@@ -403,20 +426,23 @@ export function useMapEditor() {
     });
     
     const newCollisionData = new Array(newWidth * newHeight).fill(0);
+    const newPeacefulData = new Array(newWidth * newHeight).fill(1); // Default safe
     const newTriggerData = new Array(newWidth * newHeight).fill(0);
     for (let y = 0; y < Math.min(playfieldInfo.height, newHeight); y++) {
       for (let x = 0; x < Math.min(playfieldInfo.width, newWidth); x++) {
         newCollisionData[y * newWidth + x] = collisionData[y * playfieldInfo.width + x] || 0;
+        newPeacefulData[y * newWidth + x] = peacefulData[y * playfieldInfo.width + x] ?? 1;
         newTriggerData[y * newWidth + x] = triggerData[y * playfieldInfo.width + x] || 0;
       }
     }
     
     setMapData(newMapData);
     setCollisionData(newCollisionData);
+    setPeacefulData(newPeacefulData);
     setTriggerData(newTriggerData);
     setPlayfieldInfo(prev => ({ ...prev, width: newWidth, height: newHeight }));
     saveToHistory();
-  }, [mapData, collisionData, triggerData, playfieldInfo.width, playfieldInfo.height, saveToHistory]);
+  }, [mapData, collisionData, peacefulData, triggerData, playfieldInfo.width, playfieldInfo.height, saveToHistory]);
 
   // Export data.bin - OpenRhynn format: 2 bytes per cell
   // FORMAT (compatible with both server and client):
@@ -428,6 +454,7 @@ export function useMapEditor() {
     // Get state directly (refs are updated synchronously)
     const currentMapData = mapDataRef.current;
     const currentCollisionData = collisionDataRef.current;
+    const currentPeacefulData = peacefulDataRef.current;
     const currentTriggerData = triggerDataRef.current;
     const currentPlayfieldInfo = playfieldInfoRef.current;
     
@@ -442,6 +469,7 @@ export function useMapEditor() {
     
     let triggerCount = 0;
     let blockedCount = 0;
+    let peacefulCount = 0;
     
     console.log(`📦 Export starting: ${currentPlayfieldInfo.width}x${currentPlayfieldInfo.height}`);
     
@@ -455,17 +483,19 @@ export function useMapEditor() {
         // function: 0x01 = blocked, 0x02 = peaceful (safe zone, no PvP)
         // trigger: value 1 = portal animation (lightning)
         const collision = currentCollisionData[cellIndex] || 0;
+        const peaceful = currentPeacefulData[cellIndex] ?? 1; // Default safe if not set
         const trigger = currentTriggerData[cellIndex] || 0;
         
-        // Determine function value:
-        // - 0x02 = peaceful (safe zone) - if pvpEnabled is false
-        // - 0x01 = blocked - if collision is set
-        // - 0x00 = normal (can fight)
+        // Determine function value from per-cell data:
+        // - 0x01 = blocked (collision)
+        // - 0x02 = peaceful (safe zone) - from peacefulData
+        // - 0x00 = normal (fight zone)
         let functionValue = 0x00;
         if (collision > 0) {
           functionValue = 0x01; // blocked
-        } else if (!currentPlayfieldInfo.pvpEnabled) {
+        } else if (peaceful > 0) {
           functionValue = 0x02; // peaceful/safe zone
+          peacefulCount++;
         }
         
         // Format: (trigger << 4) | (function & 0x0F) - 4-bit trigger for client compatibility
@@ -490,7 +520,7 @@ export function useMapEditor() {
         }
       }
     }
-    console.log(`✅ Exported data.bin: ${totalTiles} tiles, ${triggerCount} triggers, ${blockedCount} blocked`);
+    console.log(`✅ Exported data.bin: ${totalTiles} tiles, ${triggerCount} triggers, ${blockedCount} blocked, ${peacefulCount} peaceful`);
     return buffer;
   }, []);
 
@@ -505,6 +535,7 @@ export function useMapEditor() {
     const bytesPerCell = 2;
     const newMapData: number[][] = [[], [], []];
     const newCollisionData: number[] = new Array(totalTiles).fill(0);
+    const newPeacefulData: number[] = new Array(totalTiles).fill(0); // Default fight zone
     
     // Get existing triggers (from portals) and merge with bin data
     const currentTriggers = triggerDataRef.current;
@@ -521,6 +552,7 @@ export function useMapEditor() {
     }
     
     let blockedCount = 0;
+    let peacefulCount = 0;
     let triggerCount = 0;
     let binTriggerCount = 0;
     
@@ -539,8 +571,12 @@ export function useMapEditor() {
           const functionValue = functionByte & 0x0F;
           const triggerValue = (functionByte & 0xF0) >> 4;
           
+          // Parse function value: 0x01 = blocked, 0x02 = peaceful
           const isBlocked = functionValue === 0x01;
+          const isPeaceful = functionValue === 0x02;
+          
           newCollisionData[cellIndex] = isBlocked ? 1 : 0;
+          newPeacefulData[cellIndex] = isPeaceful ? 1 : 0;
           
           // MERGE: if bin has trigger OR existing portal has trigger -> keep trigger
           if (triggerValue > 0) {
@@ -550,6 +586,7 @@ export function useMapEditor() {
           // Keep portal triggers as-is if already set
           
           if (isBlocked) blockedCount++;
+          if (isPeaceful) peacefulCount++;
           if (newTriggerData[cellIndex] > 0) triggerCount++;
           
           // Decode: upper 3 bits = tileset index, lower 5 bits = tile index
@@ -564,10 +601,12 @@ export function useMapEditor() {
     
     setMapData(newMapData);
     setCollisionData(newCollisionData);
+    setPeacefulData(newPeacefulData);
     setTriggerData(newTriggerData);
     triggerDataRef.current = newTriggerData; // Sync ref immediately
+    peacefulDataRef.current = newPeacefulData; // Sync ref immediately
     saveToHistory();
-    console.log(`📥 Imported ${view.length} bytes, ${totalTiles} tiles, ${blockedCount} blocked, ${binTriggerCount} triggers from bin, ${triggerCount} total triggers`);
+    console.log(`📥 Imported ${view.length} bytes, ${totalTiles} tiles, ${blockedCount} blocked, ${peacefulCount} peaceful, ${binTriggerCount} triggers from bin, ${triggerCount} total triggers`);
   }, [saveToHistory]);
 
   // Export info.json - Rhynn playfield format
@@ -754,6 +793,7 @@ export function useMapEditor() {
     mapData,
     setMapData,
     collisionData,
+    peacefulData,
     triggerData,
     editorState,
     loadedTilesets,
@@ -773,6 +813,7 @@ export function useMapEditor() {
     floodFill,
     toggleCollisionAt,
     toggleTriggerAt,
+    togglePeacefulAt,
     addPortal,
     updatePortal,
     deletePortal,
