@@ -13,7 +13,8 @@ import {
   Zap,
   Package,
   Ban,
-  Sparkles
+  Sparkles,
+  Shield
 } from 'lucide-react';
 import { Tool } from '@/types/map';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,8 @@ interface ToolbarProps {
   onToggleCollision: () => void;
   showTriggers: boolean;
   onToggleTriggers: () => void;
+  showZones: boolean;
+  onToggleZones: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -71,6 +74,8 @@ export function Toolbar({
   onToggleCollision,
   showTriggers,
   onToggleTriggers,
+  showZones,
+  onToggleZones,
   canUndo,
   canRedo,
   onUndo,
@@ -171,6 +176,13 @@ export function Toolbar({
           title="Show/Hide Items"
         >
           <Package size={18} />
+        </button>
+        <button
+          onClick={onToggleZones}
+          className={cn('tool-button', showZones && 'active')}
+          title="Show/Hide Safe/Fight Zones (Z)"
+        >
+          <Shield size={18} />
         </button>
       </div>
 

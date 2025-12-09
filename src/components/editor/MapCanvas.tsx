@@ -112,6 +112,36 @@ export function MapCanvas({
       }
     }
 
+    // Draw zone overlay (safe = green, fight = red)
+    if (editorState.showZones) {
+      const isPeaceful = !playfieldInfo.pvpEnabled;
+      for (let y = 0; y < playfieldInfo.height; y++) {
+        for (let x = 0; x < playfieldInfo.width; x++) {
+          const index = y * playfieldInfo.width + x;
+          const collision = collisionData[index] || 0;
+          
+          // Only show zone for non-blocked cells
+          if (collision === 0) {
+            if (isPeaceful) {
+              // Safe zone - green overlay
+              ctx.fillStyle = 'rgba(50, 200, 100, 0.25)';
+              ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            } else {
+              // Fight zone - red overlay
+              ctx.fillStyle = 'rgba(200, 50, 50, 0.25)';
+              ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+          }
+        }
+      }
+      // Draw zone label
+      ctx.fillStyle = isPeaceful ? 'rgba(50, 200, 100, 0.9)' : 'rgba(200, 50, 50, 0.9)';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(isPeaceful ? '🛡️ SAUGI ZONA' : '⚔️ KOVOS ZONA', 8, 8);
+    }
+
     // Draw trigger overlay (portal animations) - PURPLE/MAGENTA
     if (editorState.showTriggers) {
       for (let y = 0; y < playfieldInfo.height; y++) {
