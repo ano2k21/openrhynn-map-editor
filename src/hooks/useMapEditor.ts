@@ -469,6 +469,59 @@ export function useMapEditor() {
     return sql;
   }, []);
 
+  // Import mob spawns from SQL file
+  const importMobSpawnsSql = useCallback((sqlContent: string, filterWorldId?: number): number => {
+    const TILE_SIZE = 24;
+    const mobSpawns: MobSpawn[] = [];
+    
+    // Parse INSERT statements for mob_spawning table
+    // Format: INSERT INTO mob_spawning (object_id, tpl_id, world_id, spawn_x, spawn_y, respawn_delay) VALUES (...)
+    const insertRegex = /INSERT\s+INTO\s+[`']?mob_spawning[`']?\s*\([^)]+\)\s*VALUES\s*([\s\S]*?)(?:;|$)/gi;
+    const valueRegex = /\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g;
+    
+    let match;
+    while ((match = insertRegex.exec(sqlContent)) !== null) {
+      const valuesStr = match[1];
+      let valueMatch;
+      while ((valueMatch = valueRegex.exec(valuesStr)) !== null) {
+        const objectId = parseInt(valueMatch[1]);
+        const tplId = parseInt(valueMatch[2]);
+        const worldId = parseInt(valueMatch[3]);
+        const spawnX = parseInt(valueMatch[4]);
+        const spawnY = parseInt(valueMatch[5]);
+        const respawnDelay = parseInt(valueMatch[6]);
+        
+        // Filter by world_id if specified
+        if (filterWorldId !== undefined && worldId !== filterWorldId) {
+          continue;
+        }
+        
+        // Convert pixel coordinates to tile coordinates
+        const tileX = Math.floor(spawnX / TILE_SIZE);
+        const tileY = Math.floor(spawnY / TILE_SIZE);
+        
+        mobSpawns.push({
+          id: `mob_${Date.now()}_${objectId}`,
+          objectId,
+          tplId,
+          x: tileX,
+          y: tileY,
+          respawnDelay,
+        });
+      }
+    }
+    
+    if (mobSpawns.length > 0) {
+      setPlayfieldInfo(prev => ({
+        ...prev,
+        mobSpawns: [...prev.mobSpawns, ...mobSpawns],
+      }));
+    }
+    
+    console.log(`📥 Imported ${mobSpawns.length} mob spawns from SQL`);
+    return mobSpawns.length;
+  }, []);
+
   const resizeMap = useCallback((newWidth: number, newHeight: number) => {
     const newMapData = mapData.map(layer => {
       const newLayer = new Array(newWidth * newHeight).fill(0);
@@ -881,6 +934,7 @@ export function useMapEditor() {
     updateMobSpawn,
     deleteMobSpawn,
     exportMobSpawnsSql,
+    importMobSpawnsSql,
     resizeMap,
     exportDataBin,
     importDataBin,

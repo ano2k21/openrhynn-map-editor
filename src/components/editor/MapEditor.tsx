@@ -46,6 +46,7 @@ export function MapEditor() {
     updateMobSpawn,
     deleteMobSpawn,
     exportMobSpawnsSql,
+    importMobSpawnsSql,
     resizeMap,
     exportDataBin,
     importDataBin,
@@ -294,6 +295,7 @@ export function MapEditor() {
             onMobSpawnUpdate={updateMobSpawn}
             onMobSpawnDelete={deleteMobSpawn}
             onExportMobSpawnsSql={exportMobSpawnsSql}
+            onImportMobSpawnsSql={importMobSpawnsSql}
             onLoadTilesets={loadTilesets}
           />
         </div>

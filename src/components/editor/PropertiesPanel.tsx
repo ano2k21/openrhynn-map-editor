@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
-import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
 import { MOB_TEMPLATES, getMobTemplateName } from '@/lib/mobTemplates';
@@ -28,6 +28,7 @@ interface PropertiesPanelProps {
   onMobSpawnUpdate: (id: string, updates: Partial<MobSpawn>) => void;
   onMobSpawnDelete: (id: string) => void;
   onExportMobSpawnsSql: (worldId: number) => string;
+  onImportMobSpawnsSql: (sql: string, filterWorldId?: number) => number;
   onLoadTilesets: (graphicsIds: number[]) => void;
 }
 
@@ -51,6 +52,7 @@ export function PropertiesPanel({
   onMobSpawnUpdate,
   onMobSpawnDelete,
   onExportMobSpawnsSql,
+  onImportMobSpawnsSql,
   onLoadTilesets,
 }: PropertiesPanelProps) {
   const [expandedSections, setExpandedSections] = useState({
@@ -63,6 +65,7 @@ export function PropertiesPanel({
   });
   const [tilesetPreviews, setTilesetPreviews] = useState<TilesetPreview[]>([]);
   const [worldIdForExport, setWorldIdForExport] = useState(100130);
+  const sqlImportRef = useRef<HTMLInputElement>(null);
 
   // Load tileset previews
   useEffect(() => {
@@ -517,7 +520,7 @@ export function PropertiesPanel({
                 Pridėti mobą
               </Button>
 
-              {/* Export SQL */}
+              {/* Import/Export SQL */}
               <div className="flex items-center gap-1">
                 <div className="flex-1">
                   <label className="block text-[10px] text-muted-foreground mb-1">World ID</label>
@@ -528,6 +531,15 @@ export function PropertiesPanel({
                     className="input-field w-full text-[10px] py-0.5 px-1"
                   />
                 </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-7 mt-4"
+                  onClick={() => sqlImportRef.current?.click()}
+                  title="Importuoti mobus iš SQL"
+                >
+                  <Upload size={12} />
+                </Button>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -545,10 +557,34 @@ export function PropertiesPanel({
                   }}
                   disabled={playfieldInfo.mobSpawns.length === 0}
                 >
-                  <Download size={12} className="mr-1" />
-                  SQL
+                  <Download size={12} />
                 </Button>
               </div>
+
+              {/* Hidden SQL file input */}
+              <input
+                ref={sqlImportRef}
+                type="file"
+                accept=".sql,.txt"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const sqlContent = event.target?.result as string;
+                      const count = onImportMobSpawnsSql(sqlContent, worldIdForExport);
+                      if (count > 0) {
+                        toast.success(`Importuota ${count} mobų iš SQL (world_id: ${worldIdForExport})`);
+                      } else {
+                        toast.warning(`Nerasta mobų su world_id: ${worldIdForExport}`);
+                      }
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                  }
+                }}
+              />
 
               {/* Mob list */}
               {playfieldInfo.mobSpawns.map((mob) => (
