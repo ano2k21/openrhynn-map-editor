@@ -29,6 +29,7 @@ export function MapEditor() {
     toggleItems,
     toggleCollision,
     toggleTriggers,
+    toggleZones,
     paintTile,
     floodFill,
     toggleCollisionAt,
@@ -212,6 +213,8 @@ export function MapEditor() {
           onToggleCollision={toggleCollision}
           showTriggers={editorState.showTriggers}
           onToggleTriggers={toggleTriggers}
+          showZones={editorState.showZones}
+          onToggleZones={toggleZones}
           canUndo={canUndo}
           canRedo={canRedo}
           onUndo={undo}

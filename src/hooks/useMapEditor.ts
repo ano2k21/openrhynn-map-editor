@@ -62,6 +62,7 @@ export function useMapEditor() {
     showItems: true,
     showCollision: false,
     showTriggers: true,
+    showZones: false,
   });
 
   const [loadedTilesets, setLoadedTilesets] = useState<LoadedTileset[]>([]);
@@ -148,6 +149,10 @@ export function useMapEditor() {
 
   const toggleTriggers = useCallback(() => {
     setEditorState(prev => ({ ...prev, showTriggers: !prev.showTriggers }));
+  }, []);
+
+  const toggleZones = useCallback(() => {
+    setEditorState(prev => ({ ...prev, showZones: !prev.showZones }));
   }, []);
 
   const toggleCollisionAt = useCallback((x: number, y: number) => {
@@ -763,6 +768,7 @@ export function useMapEditor() {
     toggleItems,
     toggleCollision,
     toggleTriggers,
+    toggleZones,
     paintTile,
     floodFill,
     toggleCollisionAt,

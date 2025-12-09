@@ -72,6 +72,7 @@ export interface EditorState {
   showItems: boolean;
   showCollision: boolean;
   showTriggers: boolean;
+  showZones: boolean;
 }
 
 export interface CursorPosition {
