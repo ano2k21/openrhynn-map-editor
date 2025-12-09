@@ -8,6 +8,7 @@ interface MapCanvasProps {
   playfieldInfo: PlayfieldInfo;
   mapData: number[][];
   collisionData: number[];
+  peacefulData: number[];
   triggerData: number[];
   editorState: EditorState;
   getTile: (tileId: number) => HTMLCanvasElement | null;
@@ -15,6 +16,7 @@ interface MapCanvasProps {
   onFill: (x: number, y: number) => void;
   onToggleCollision: (x: number, y: number) => void;
   onToggleTrigger: (x: number, y: number) => void;
+  onTogglePeaceful: (x: number, y: number) => void;
   onSaveHistory: () => void;
   onPortalSelect: (portal: Portal | null) => void;
   onSetSpawn: (x: number, y: number) => void;
@@ -27,6 +29,7 @@ export function MapCanvas({
   playfieldInfo,
   mapData,
   collisionData,
+  peacefulData,
   triggerData,
   editorState,
   getTile,
@@ -34,6 +37,7 @@ export function MapCanvas({
   onFill,
   onToggleCollision,
   onToggleTrigger,
+  onTogglePeaceful,
   onSaveHistory,
   onPortalSelect,
   onSetSpawn,
@@ -112,34 +116,39 @@ export function MapCanvas({
       }
     }
 
-    // Draw zone overlay (safe = green, fight = red)
+    // Draw zone overlay (safe = green, fight = red) - PER CELL from peacefulData
     if (editorState.showZones) {
-      const isPeaceful = !playfieldInfo.pvpEnabled;
+      let peacefulCount = 0;
+      let fightCount = 0;
+      
       for (let y = 0; y < playfieldInfo.height; y++) {
         for (let x = 0; x < playfieldInfo.width; x++) {
           const index = y * playfieldInfo.width + x;
           const collision = collisionData[index] || 0;
+          const peaceful = peacefulData[index] ?? 0;
           
           // Only show zone for non-blocked cells
           if (collision === 0) {
-            if (isPeaceful) {
+            if (peaceful > 0) {
               // Safe zone - green overlay
               ctx.fillStyle = 'rgba(50, 200, 100, 0.25)';
               ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+              peacefulCount++;
             } else {
-              // Fight zone - red overlay
+              // Fight zone - red overlay  
               ctx.fillStyle = 'rgba(200, 50, 50, 0.25)';
               ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+              fightCount++;
             }
           }
         }
       }
-      // Draw zone label
-      ctx.fillStyle = isPeaceful ? 'rgba(50, 200, 100, 0.9)' : 'rgba(200, 50, 50, 0.9)';
-      ctx.font = 'bold 14px sans-serif';
+      // Draw zone summary label
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText(isPeaceful ? '🛡️ SAUGI ZONA' : '⚔️ KOVOS ZONA', 8, 8);
+      ctx.fillText(`🛡️ ${peacefulCount} safe | ⚔️ ${fightCount} fight`, 8, 8);
     }
 
     // Draw trigger overlay (portal animations) - PURPLE/MAGENTA
@@ -244,17 +253,18 @@ export function MapCanvas({
     }
 
     // Draw cursor highlight
-    if (mousePos && (editorState.tool === 'brush' || editorState.tool === 'eraser' || editorState.tool === 'fill' || editorState.tool === 'portalPlace' || editorState.tool === 'itemPlace' || editorState.tool === 'block' || editorState.tool === 'trigger')) {
+    if (mousePos && (editorState.tool === 'brush' || editorState.tool === 'eraser' || editorState.tool === 'fill' || editorState.tool === 'portalPlace' || editorState.tool === 'itemPlace' || editorState.tool === 'block' || editorState.tool === 'trigger' || editorState.tool === 'zone')) {
       ctx.strokeStyle = editorState.tool === 'eraser' ? 'rgba(255, 100, 100, 0.8)' : 
                        editorState.tool === 'portalPlace' ? 'rgba(255, 220, 50, 0.8)' :
                        editorState.tool === 'itemPlace' ? 'rgba(100, 200, 255, 0.8)' :
                        editorState.tool === 'block' ? 'rgba(255, 50, 50, 0.8)' :
                        editorState.tool === 'trigger' ? 'rgba(200, 50, 255, 0.8)' :
+                       editorState.tool === 'zone' ? 'rgba(50, 200, 100, 0.8)' :
                        'rgba(255, 255, 100, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(mousePos.x * TILE_SIZE, mousePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
     }
-  }, [playfieldInfo, mapData, collisionData, triggerData, editorState, getTile, mousePos, canvasWidth, canvasHeight]);
+  }, [playfieldInfo, mapData, collisionData, peacefulData, triggerData, editorState, getTile, mousePos, canvasWidth, canvasHeight]);
 
   const getTileCoords = useCallback((e: React.MouseEvent): { x: number; y: number; pixelX: number; pixelY: number } | null => {
     const canvas = canvasRef.current;
@@ -296,6 +306,9 @@ export function MapCanvas({
     } else if (editorState.tool === 'trigger') {
       onSaveHistory();
       onToggleTrigger(coords.x, coords.y);
+    } else if (editorState.tool === 'zone') {
+      onSaveHistory();
+      onTogglePeaceful(coords.x, coords.y);
     } else if (editorState.tool === 'spawn') {
       onSetSpawn(coords.x, coords.y);
     } else if (editorState.tool === 'portalPlace') {
@@ -308,7 +321,7 @@ export function MapCanvas({
       );
       onPortalSelect(clickedPortal || null);
     }
-  }, [editorState.tool, getTileCoords, playfieldInfo.portals, onFill, onPaint, onToggleCollision, onToggleTrigger, onPortalSelect, onSaveHistory, onSetSpawn, onPlacePortal, onPlaceItem]);
+  }, [editorState.tool, getTileCoords, playfieldInfo.portals, onFill, onPaint, onToggleCollision, onToggleTrigger, onTogglePeaceful, onPortalSelect, onSaveHistory, onSetSpawn, onPlacePortal, onPlaceItem]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDragging) {

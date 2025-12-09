@@ -60,7 +60,7 @@ export interface TilesetTile {
   image: ImageData | null;
 }
 
-export type Tool = 'select' | 'brush' | 'eraser' | 'fill' | 'portal' | 'spawn' | 'item' | 'portalPlace' | 'itemPlace' | 'block' | 'trigger';
+export type Tool = 'select' | 'brush' | 'eraser' | 'fill' | 'portal' | 'spawn' | 'item' | 'portalPlace' | 'itemPlace' | 'block' | 'trigger' | 'zone';
 
 export interface EditorState {
   tool: Tool;
