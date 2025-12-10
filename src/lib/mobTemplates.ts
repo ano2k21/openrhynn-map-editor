@@ -11,7 +11,7 @@ export interface MobTemplate {
   legendary: boolean;
 }
 
-// All 77 mob templates from OpenRhynn server content (100000-100076)
+// All 88 mob templates from OpenRhynn server content (100000-100087)
 export const MOB_TEMPLATES: MobTemplate[] = [
   { id: 100000, name: "Sheep", level: 1, health: 300, aggressive: false, peaceful: true, legendary: false },
   { id: 100001, name: "Mosquito", level: 2, health: 400, aggressive: true, peaceful: false, legendary: false },
@@ -90,6 +90,17 @@ export const MOB_TEMPLATES: MobTemplate[] = [
   { id: 100074, name: "Sand Golem", level: 95, health: 1500, aggressive: true, peaceful: false, legendary: false },
   { id: 100075, name: "Mummy", level: 83, health: 6500, aggressive: true, peaceful: false, legendary: false },
   { id: 100076, name: "Mummy", level: 82, health: 6500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100077, name: "Zombie", level: 71, health: 4500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100078, name: "Zombie", level: 75, health: 4500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100079, name: "Sand Golem", level: 84, health: 1500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100080, name: "Sand Golem", level: 79, health: 1500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100081, name: "Sand Golem", level: 76, health: 1000, aggressive: true, peaceful: false, legendary: false },
+  { id: 100082, name: "One Eye Frog", level: 97, health: 10000, aggressive: true, peaceful: false, legendary: true },
+  { id: 100083, name: "Frog", level: 50, health: 360, aggressive: true, peaceful: false, legendary: false },
+  { id: 100084, name: "Frog", level: 47, health: 360, aggressive: true, peaceful: false, legendary: false },
+  { id: 100085, name: "Frog", level: 45, health: 360, aggressive: true, peaceful: false, legendary: false },
+  { id: 100086, name: "Spore Plant", level: 35, health: 1500, aggressive: true, peaceful: false, legendary: false },
+  { id: 100087, name: "Spore Plant", level: 40, health: 1500, aggressive: true, peaceful: false, legendary: false },
 ];
 
 export function getMobTemplateById(id: number): MobTemplate | undefined {
