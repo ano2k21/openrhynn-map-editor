@@ -72,6 +72,7 @@ export function useMapEditor() {
     showCollision: false,
     showTriggers: true,
     showZones: false,
+    selectedMobTplId: 100000, // Default mob template
   });
 
   const [loadedTilesets, setLoadedTilesets] = useState<LoadedTileset[]>([]);
@@ -162,6 +163,10 @@ export function useMapEditor() {
 
   const toggleZones = useCallback(() => {
     setEditorState(prev => ({ ...prev, showZones: !prev.showZones }));
+  }, []);
+
+  const setSelectedMobTplId = useCallback((tplId: number) => {
+    setEditorState(prev => ({ ...prev, selectedMobTplId: tplId }));
   }, []);
 
   const toggleCollisionAt = useCallback((x: number, y: number) => {
@@ -975,6 +980,7 @@ export function useMapEditor() {
     saveToHistory,
     getTile,
     getTotalTileCount,
+    setSelectedMobTplId,
     canUndo: historyIndex > 0,
     canRedo: historyIndex < history.length - 1,
   };

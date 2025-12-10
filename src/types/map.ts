@@ -74,6 +74,7 @@ export interface EditorState {
   showCollision: boolean;
   showTriggers: boolean;
   showZones: boolean;
+  selectedMobTplId: number;
 }
 
 export interface CursorPosition {
