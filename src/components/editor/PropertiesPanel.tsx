@@ -3,7 +3,7 @@ import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
 import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
-import { MOB_TEMPLATES, getMobTemplateName } from '@/lib/mobTemplates';
+import { MOB_TEMPLATES, getMobTemplateName, getMobSpriteUrlByTplId } from '@/lib/mobTemplates';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -590,9 +590,18 @@ export function PropertiesPanel({
               {playfieldInfo.mobSpawns.map((mob) => (
                 <div key={mob.id} className="p-2 rounded-sm border border-border">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <Skull size={12} className="text-red-400" />
-                      <span className="text-xs font-medium">{getMobTemplateName(mob.tplId)}</span>
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={getMobSpriteUrlByTplId(mob.tplId)} 
+                        alt="" 
+                        className="w-8 h-8 object-contain bg-black/20 rounded"
+                        style={{ imageRendering: 'pixelated' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium">{getMobTemplateName(mob.tplId)}</span>
+                        <span className="text-[9px] text-muted-foreground">ID: {mob.tplId}</span>
+                      </div>
                     </div>
                     <button
                       onClick={() => onMobSpawnDelete(mob.id)}
@@ -611,10 +620,20 @@ export function PropertiesPanel({
                         <SelectTrigger className="h-6 text-[10px]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-48">
+                        <SelectContent className="max-h-64">
                           {MOB_TEMPLATES.map((template) => (
                             <SelectItem key={template.id} value={template.id.toString()} className="text-xs">
-                              {template.name} (Lv.{template.level})
+                              <div className="flex items-center gap-2">
+                                <img 
+                                  src={getMobSpriteUrlByTplId(template.id)} 
+                                  alt="" 
+                                  className="w-6 h-6 object-contain"
+                                  style={{ imageRendering: 'pixelated' }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                                <span>{template.name} (Lv.{template.level})</span>
+                                {template.legendary && <span className="text-yellow-500 text-[8px]">★</span>}
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
