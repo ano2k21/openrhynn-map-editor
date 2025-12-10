@@ -58,6 +58,7 @@ export function MapEditor() {
     saveToHistory,
     getTile,
     getTotalTileCount,
+    setSelectedMobTplId,
     canUndo,
     canRedo,
   } = useMapEditor();
@@ -152,12 +153,12 @@ export function MapEditor() {
   const handlePlaceMob = useCallback((x: number, y: number) => {
     addMobSpawn({
       objectId: 100000 + playfieldInfo.mobSpawns.length,
-      tplId: 100000,
+      tplId: editorState.selectedMobTplId,
       x,
       y,
       respawnDelay: 60000,
     });
-  }, [addMobSpawn, playfieldInfo.mobSpawns.length]);
+  }, [addMobSpawn, playfieldInfo.mobSpawns.length, editorState.selectedMobTplId]);
 
   const handleSelectTile = useCallback((localIndex: number) => {
     // localIndex is 0-based, we store 1-based for tiles (0 = empty)
@@ -240,6 +241,8 @@ export function MapEditor() {
           onRedo={redo}
           selectedLayer={editorState.selectedLayer}
           onLayerChange={setSelectedLayer}
+          selectedMobTplId={editorState.selectedMobTplId}
+          onMobTplChange={setSelectedMobTplId}
         />
       </div>
 

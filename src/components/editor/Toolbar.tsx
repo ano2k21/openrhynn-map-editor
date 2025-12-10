@@ -19,6 +19,15 @@ import {
 } from 'lucide-react';
 import { Tool } from '@/types/map';
 import { cn } from '@/lib/utils';
+import { MOB_TEMPLATES } from '@/lib/mobTemplates';
+import { MobSprite } from './MobSprite';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ToolbarProps {
   currentTool: Tool;
@@ -43,6 +52,8 @@ interface ToolbarProps {
   onRedo: () => void;
   selectedLayer: number;
   onLayerChange: (layer: number) => void;
+  selectedMobTplId: number;
+  onMobTplChange: (tplId: number) => void;
 }
 
 const tools: { id: Tool; icon: React.ReactNode; label: string; shortcut?: string }[] = [
@@ -85,9 +96,11 @@ export function Toolbar({
   onRedo,
   selectedLayer,
   onLayerChange,
+  selectedMobTplId,
+  onMobTplChange,
 }: ToolbarProps) {
   return (
-    <div className="panel flex items-center gap-1 p-1">
+    <div className="panel flex items-center gap-1 p-1 flex-wrap">
       {/* Tools */}
       <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
         {tools.map((tool) => (
@@ -101,6 +114,32 @@ export function Toolbar({
           </button>
         ))}
       </div>
+
+      {/* Mob selector - show when mob tool is active */}
+      {currentTool === 'mobPlace' && (
+        <div className="flex items-center gap-2 border-r border-border pr-2 mr-1">
+          <MobSprite tplId={selectedMobTplId} size={28} />
+          <Select
+            value={selectedMobTplId.toString()}
+            onValueChange={(value) => onMobTplChange(parseInt(value))}
+          >
+            <SelectTrigger className="h-7 w-40 text-xs">
+              <SelectValue placeholder="Pasirink mobą" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              {MOB_TEMPLATES.map((template) => (
+                <SelectItem key={template.id} value={template.id.toString()} className="text-xs">
+                  <div className="flex items-center gap-2">
+                    <MobSprite tplId={template.id} size={20} />
+                    <span>{template.name} (Lv.{template.level})</span>
+                    {template.legendary && <span className="text-yellow-500 text-[10px]">★</span>}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Undo/Redo */}
       <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
