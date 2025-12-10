@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { PlayfieldInfo, Portal, Item, MobSpawn } from '@/types/map';
-import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Skull, Download, Plus, Upload } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2, Package, Zap, Copy, Download, Plus, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TILE_DEFINITIONS, loadTilesetImage } from '@/lib/rhynnTiles';
-import { MOB_TEMPLATES, getMobTemplateName, getMobSpriteUrlByTplId } from '@/lib/mobTemplates';
+import { MOB_TEMPLATES, getMobTemplateName } from '@/lib/mobTemplates';
+import { MobSprite } from './MobSprite';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -591,13 +592,7 @@ export function PropertiesPanel({
                 <div key={mob.id} className="p-2 rounded-sm border border-border">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <img 
-                        src={getMobSpriteUrlByTplId(mob.tplId)} 
-                        alt="" 
-                        className="w-8 h-8 object-contain bg-black/20 rounded"
-                        style={{ imageRendering: 'pixelated' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
+                      <MobSprite tplId={mob.tplId} size={32} />
                       <div className="flex flex-col">
                         <span className="text-xs font-medium">{getMobTemplateName(mob.tplId)}</span>
                         <span className="text-[9px] text-muted-foreground">ID: {mob.tplId}</span>
@@ -624,13 +619,7 @@ export function PropertiesPanel({
                           {MOB_TEMPLATES.map((template) => (
                             <SelectItem key={template.id} value={template.id.toString()} className="text-xs">
                               <div className="flex items-center gap-2">
-                                <img 
-                                  src={getMobSpriteUrlByTplId(template.id)} 
-                                  alt="" 
-                                  className="w-6 h-6 object-contain"
-                                  style={{ imageRendering: 'pixelated' }}
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
+                                <MobSprite tplId={template.id} size={24} />
                                 <span>{template.name} (Lv.{template.level})</span>
                                 {template.legendary && <span className="text-yellow-500 text-[8px]">★</span>}
                               </div>
