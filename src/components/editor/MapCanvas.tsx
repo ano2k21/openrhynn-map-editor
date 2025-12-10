@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { PlayfieldInfo, Portal, Item, EditorState, CursorPosition } from '@/types/map';
-import { getMobTemplateName } from '@/lib/mobTemplates';
+import { getMobTemplateName, getMobSpriteUrlByTplId } from '@/lib/mobTemplates';
 import { cn } from '@/lib/utils';
 
 const TILE_SIZE = 24;
@@ -55,9 +55,30 @@ export function MapCanvas({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const lastPosRef = useRef({ x: 0, y: 0 });
+  const mobSpritesRef = useRef<Map<number, HTMLImageElement>>(new Map());
 
   const canvasWidth = playfieldInfo.width * TILE_SIZE;
   const canvasHeight = playfieldInfo.height * TILE_SIZE;
+
+  // Load mob sprites
+  useEffect(() => {
+    const tplIds = new Set(playfieldInfo.mobSpawns.map(m => m.tplId));
+    tplIds.forEach(tplId => {
+      if (!mobSpritesRef.current.has(tplId)) {
+        const url = getMobSpriteUrlByTplId(tplId);
+        if (url) {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            mobSpritesRef.current.set(tplId, img);
+            // Trigger re-render
+            canvasRef.current?.getContext('2d')?.clearRect(0, 0, 0, 0);
+          };
+          img.src = url;
+        }
+      }
+    });
+  }, [playfieldInfo.mobSpawns]);
 
   // Render map
   useEffect(() => {
@@ -255,26 +276,33 @@ export function MapCanvas({
       });
     }
 
-    // Draw mob spawns - skull icon
+    // Draw mob spawns - with sprite
     playfieldInfo.mobSpawns.forEach((mob) => {
-      const mx = mob.x * TILE_SIZE + TILE_SIZE / 2;
-      const my = mob.y * TILE_SIZE + TILE_SIZE / 2;
+      const mx = mob.x * TILE_SIZE;
+      const my = mob.y * TILE_SIZE;
       
-      // Draw skull background circle
-      ctx.fillStyle = 'rgba(255, 50, 50, 0.9)';
-      ctx.beginPath();
-      ctx.arc(mx, my, 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      
-      // Draw skull emoji
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('💀', mx, my);
+      const spriteImg = mobSpritesRef.current.get(mob.tplId);
+      if (spriteImg && spriteImg.complete) {
+        // Draw front-facing sprite (first 24x24 frame)
+        ctx.drawImage(
+          spriteImg,
+          0, 0, 24, 24,  // Source: first frame
+          mx, my, TILE_SIZE, TILE_SIZE  // Destination
+        );
+        // Add subtle border
+        ctx.strokeStyle = 'rgba(255, 100, 100, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mx, my, TILE_SIZE, TILE_SIZE);
+      } else {
+        // Fallback: red circle
+        ctx.fillStyle = 'rgba(255, 50, 50, 0.9)';
+        ctx.beginPath();
+        ctx.arc(mx + TILE_SIZE / 2, my + TILE_SIZE / 2, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
       
       // Draw mob name below
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -282,7 +310,7 @@ export function MapCanvas({
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       const mobName = getMobTemplateName(mob.tplId);
-      ctx.fillText(mobName.length > 8 ? mobName.substring(0, 8) + '..' : mobName, mx, my + 12);
+      ctx.fillText(mobName.length > 8 ? mobName.substring(0, 8) + '..' : mobName, mx + TILE_SIZE / 2, my + TILE_SIZE + 2);
     });
 
     // Draw cursor highlight
