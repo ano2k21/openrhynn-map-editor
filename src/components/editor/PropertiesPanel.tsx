@@ -315,7 +315,7 @@ export function PropertiesPanel({
           </button>
           {expandedSections.items && (
             <div className="px-3 pb-3 space-y-2">
-              <p className="text-[10px] text-muted-foreground mb-2">Use "Dėti daiktą" tool</p>
+              <p className="text-[10px] text-muted-foreground mb-2">Use "Place Item" tool</p>
               {playfieldInfo.items.map((item) => (
                 <div key={item.id} className="p-2 rounded-sm border border-border">
                   <div className="flex items-center justify-between mb-2">
@@ -397,7 +397,7 @@ export function PropertiesPanel({
           </button>
           {expandedSections.portals && (
             <div className="px-3 pb-3 space-y-2">
-              <p className="text-[10px] text-muted-foreground mb-2">Use "Dėti portalą" tool</p>
+              <p className="text-[10px] text-muted-foreground mb-2">Use "Place Portal" tool</p>
 
               {playfieldInfo.portals.map((portal) => (
                 <div
@@ -518,7 +518,7 @@ export function PropertiesPanel({
                 })}
               >
                 <Plus size={12} className="mr-1" />
-                Pridėti mobą
+                Add Mob
               </Button>
 
               {/* Import/Export SQL */}
@@ -537,7 +537,7 @@ export function PropertiesPanel({
                   variant="outline"
                   className="text-xs h-7 mt-4"
                   onClick={() => sqlImportRef.current?.click()}
-                  title="Importuoti mobus iš SQL"
+                  title="Import mobs from SQL"
                 >
                   <Upload size={12} />
                 </Button>
@@ -554,7 +554,7 @@ export function PropertiesPanel({
                     a.download = `mob_spawning_${worldIdForExport}.sql`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    toast.success(`Eksportuota ${playfieldInfo.mobSpawns.length} mobų SQL`);
+                    toast.success(`Exported ${playfieldInfo.mobSpawns.length} mob spawns to SQL`);
                   }}
                   disabled={playfieldInfo.mobSpawns.length === 0}
                 >
@@ -576,9 +576,9 @@ export function PropertiesPanel({
                       const sqlContent = event.target?.result as string;
                       const count = onImportMobSpawnsSql(sqlContent, worldIdForExport);
                       if (count > 0) {
-                        toast.success(`Importuota ${count} mobų iš SQL (world_id: ${worldIdForExport})`);
+                        toast.success(`Imported ${count} mobs from SQL (world_id: ${worldIdForExport})`);
                       } else {
-                        toast.warning(`Nerasta mobų su world_id: ${worldIdForExport}`);
+                        toast.warning(`No mobs found with world_id: ${worldIdForExport}`);
                       }
                     };
                     reader.readAsText(file);

@@ -7,7 +7,7 @@ const TILE_SIZE = 24;
 export function useMapEditor() {
   const [playfieldInfo, setPlayfieldInfo] = useState<PlayfieldInfo>({
     id: 1,
-    name: 'Naujas žemėlapis',
+    name: 'New Map',
     width: 40,
     height: 30,
     graphicsIds: [100127], // Default: back_grass_human_01.png
@@ -813,7 +813,7 @@ export function useMapEditor() {
         targetPlayfieldId: p.dest?.world_id || 0,
         targetX: p.dest?.x || 0,
         targetY: p.dest?.y || 0,
-        name: `Portalas į ${p.dest?.world_id || 'nežinoma'}`,
+        name: `Portal to ${p.dest?.world_id || 'unknown'}`,
         requiredLevel: p.required_level || 0,
         requiredQuest: p.required_quest || '',
       }));

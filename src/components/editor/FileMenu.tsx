@@ -93,7 +93,7 @@ export function FileMenu({
     a.click();
     URL.revokeObjectURL(url);
     
-    toast.success(`Eksportuota data.bin su ${triggerCount} trigger(iais)`);
+    toast.success(`Exported data.bin with ${triggerCount} trigger(s)`);
   };
 
   const handleExportInfoJson = () => {
