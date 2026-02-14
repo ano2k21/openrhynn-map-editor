@@ -10,16 +10,16 @@ interface StatusBarProps {
 }
 
 const toolNames: Record<string, string> = {
-  select: 'Pasirinkti',
-  brush: 'Teptukas',
-  eraser: 'Trintukas',
-  fill: 'Užpildyti',
-  portal: 'Portalas',
-  portalPlace: 'Dėti portalą',
-  itemPlace: 'Dėti daiktą',
+  select: 'Select',
+  brush: 'Brush',
+  eraser: 'Eraser',
+  fill: 'Fill',
+  portal: 'Portal',
+  portalPlace: 'Place Portal',
+  itemPlace: 'Place Item',
   spawn: 'Spawn',
-  item: 'Daiktas',
-  block: 'Blokas',
+  item: 'Item',
+  block: 'Block',
 };
 
 const layerNames = ['Ground', 'Objects', 'Top'];

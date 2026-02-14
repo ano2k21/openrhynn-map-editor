@@ -135,7 +135,7 @@ export function MapEditor() {
       targetPlayfieldId: 0,
       targetX: 0,
       targetY: 0,
-      name: `Portalas ${playfieldInfo.portals.length + 1}`,
+      name: `Portal ${playfieldInfo.portals.length + 1}`,
     });
     setTool('portal');
   }, [addPortal, playfieldInfo.portals.length, setTool]);

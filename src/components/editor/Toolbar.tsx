@@ -57,18 +57,18 @@ interface ToolbarProps {
 }
 
 const tools: { id: Tool; icon: React.ReactNode; label: string; shortcut?: string }[] = [
-  { id: 'select', icon: <MousePointer2 size={18} />, label: 'Pasirinkti', shortcut: 'V' },
-  { id: 'brush', icon: <Paintbrush size={18} />, label: 'Teptukas', shortcut: 'B' },
-  { id: 'eraser', icon: <Eraser size={18} />, label: 'Trintukas', shortcut: 'E' },
-  { id: 'fill', icon: <PaintBucket size={18} />, label: 'Užpildyti', shortcut: 'F' },
-  { id: 'block', icon: <Ban size={18} />, label: 'Blokuoti/Atblokuoti', shortcut: 'X' },
-  { id: 'trigger', icon: <Sparkles size={18} />, label: 'Trigger (animacija)', shortcut: 'T' },
-  { id: 'zone', icon: <Shield size={18} />, label: 'Safe/Fight zona', shortcut: 'Z' },
-  { id: 'portal', icon: <MapPin size={18} />, label: 'Pasirinkti portalą', shortcut: 'P' },
-  { id: 'portalPlace', icon: <Zap size={18} />, label: 'Dėti portalą' },
-  { id: 'itemPlace', icon: <Package size={18} />, label: 'Dėti daiktą' },
-  { id: 'mobPlace', icon: <Skull size={18} />, label: 'Dėti mobą', shortcut: 'M' },
-  { id: 'spawn', icon: <Target size={18} />, label: 'Atsiradimo taškas', shortcut: 'S' },
+  { id: 'select', icon: <MousePointer2 size={18} />, label: 'Select', shortcut: 'V' },
+  { id: 'brush', icon: <Paintbrush size={18} />, label: 'Brush', shortcut: 'B' },
+  { id: 'eraser', icon: <Eraser size={18} />, label: 'Eraser', shortcut: 'E' },
+  { id: 'fill', icon: <PaintBucket size={18} />, label: 'Fill', shortcut: 'F' },
+  { id: 'block', icon: <Ban size={18} />, label: 'Block/Unblock', shortcut: 'X' },
+  { id: 'trigger', icon: <Sparkles size={18} />, label: 'Trigger (animation)', shortcut: 'T' },
+  { id: 'zone', icon: <Shield size={18} />, label: 'Safe/Fight Zone', shortcut: 'Z' },
+  { id: 'portal', icon: <MapPin size={18} />, label: 'Select Portal', shortcut: 'P' },
+  { id: 'portalPlace', icon: <Zap size={18} />, label: 'Place Portal' },
+  { id: 'itemPlace', icon: <Package size={18} />, label: 'Place Item' },
+  { id: 'mobPlace', icon: <Skull size={18} />, label: 'Place Mob', shortcut: 'M' },
+  { id: 'spawn', icon: <Target size={18} />, label: 'Spawn Point', shortcut: 'S' },
 ];
 
 const layers = ['Ground', 'Objects', 'Top'];
