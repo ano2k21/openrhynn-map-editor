@@ -32,7 +32,7 @@ Modern Web Browser (for web-based version) or Node.js (for desktop/local version
 Installation
 Bash
 # Clone the repository
-git clone https://github.com/your-username/openrhynn-map-editor.git
+git clone https://github.com/ano2k21/openrhynn-map-editor.git
 
 # Navigate to the directory
 cd openrhynn-map-editor
