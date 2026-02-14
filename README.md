@@ -1,73 +1,57 @@
-# Welcome to your Lovable project
+OpenRhynn Map Editor
+A powerful, intuitive, and AI-assisted map editing tool designed specifically for the OpenRhynn ecosystem. This tool empowers developers and creators to build immersive worlds, manage entities, and define gameplay zones with ease.
 
-## Project info
+🚀 Features
+Whether you are starting from scratch or fine-tuning an existing environment, the OpenRhynn Map Editor provides all the essential tools:
 
-**URL**: https://lovable.dev/projects/7ccf2eb9-95d1-47fa-9fbc-df0c0abeca28
+World Creation: Create brand new maps from a blank canvas.
 
-## How can I edit this code?
+Dynamic Portals: Easily add and link portals to connect different regions or maps.
 
-There are several ways of editing your application.
+Entity Management: * Place new zombie spawns.
 
-**Use Lovable**
+Edit existing zombie attributes and locations.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7ccf2eb9-95d1-47fa-9fbc-df0c0abeca28) and start prompting.
+Zone Definition:
 
-Changes made via Lovable will be committed automatically to this repo.
+Define and adjust Safe Zones for player interaction.
 
-**Use your preferred IDE**
+Set up Combat Zones to control where the action happens.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Map Refinement: Open and edit any existing map file to update layouts or balance gameplay.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🤖 Built with AI
+This project was developed with the assistance of Artificial Intelligence, leveraging advanced coding models to ensure clean architecture, efficient performance, and user-friendly logic.
 
-Follow these steps:
+🛠 Getting Started
+Prerequisites
+OpenRhynn Core Engine
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Modern Web Browser (for web-based version) or Node.js (for desktop/local version)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Installation
+Bash
+# Clone the repository
+git clone https://github.com/your-username/openrhynn-map-editor.git
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Navigate to the directory
+cd openrhynn-map-editor
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+# Install dependencies
+npm install
 
-**Edit a file directly in GitHub**
+# Start the editor
+npm start
+🗺 How to Use
+New Map: Click on "File > New Map" to set your dimensions.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Adding Entities: Select the "Zombie" or "Portal" tool from the sidebar and click anywhere on the grid.
 
-**Use GitHub Codespaces**
+Zones: Use the brush tool to paint Safe Zones (Green) or Combat Zones (Red).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Save/Export: Export your map directly into the OpenRhynn compatible format.
 
-## What technologies are used for this project?
+🤝 Contributing
+Contributions are welcome! If you have ideas for new features or find any bugs, please open an issue or submit a pull request.
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7ccf2eb9-95d1-47fa-9fbc-df0c0abeca28) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+OpenRhynn Map Editor is an open-source project dedicated to the growth of the OpenRhynn community.
