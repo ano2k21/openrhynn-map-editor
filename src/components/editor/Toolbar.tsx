@@ -124,7 +124,7 @@ export function Toolbar({
             onValueChange={(value) => onMobTplChange(parseInt(value))}
           >
             <SelectTrigger className="h-7 w-40 text-xs">
-              <SelectValue placeholder="Pasirink mobą" />
+              <SelectValue placeholder="Select mob" />
             </SelectTrigger>
             <SelectContent className="max-h-72">
               {MOB_TEMPLATES.map((template) => (

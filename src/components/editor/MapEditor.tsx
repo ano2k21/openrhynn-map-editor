@@ -203,7 +203,7 @@ export function MapEditor() {
         <div className="flex items-center gap-2 text-primary">
           <Map size={18} />
           <span className="font-pixel text-[10px]">RHYNN</span>
-          <span className="text-xs text-muted-foreground">Žemėlapių redaktorius</span>
+          <span className="text-xs text-muted-foreground">Map Editor</span>
         </div>
         <div className="h-4 w-px bg-border mx-2" />
         <FileMenu
