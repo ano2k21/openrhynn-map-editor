@@ -19,6 +19,7 @@ Define and adjust Safe Zones for player interaction.
 Set up Combat Zones to control where the action happens.
 
 Map Refinement: Open and edit any existing map file to update layouts or balance gameplay.
+<img width="1910" height="893" alt="Screenshot_2" src="https://github.com/user-attachments/assets/59c24dac-b554-485f-b559-4008c34d7f0a" />
 
 🤖 Built with AI
 This project was developed with the assistance of Artificial Intelligence, leveraging advanced coding models to ensure clean architecture, efficient performance, and user-friendly logic.
@@ -55,3 +56,6 @@ Save/Export: Export your map directly into the OpenRhynn compatible format.
 Contributions are welcome! If you have ideas for new features or find any bugs, please open an issue or submit a pull request.
 
 OpenRhynn Map Editor is an open-source project dedicated to the growth of the OpenRhynn community.
+
+-------------------------------------------
+By: Ano 2025
