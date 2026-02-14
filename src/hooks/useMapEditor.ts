@@ -820,7 +820,7 @@ export function useMapEditor() {
       
       const newInfo: PlayfieldInfo = {
         id: Date.now(),
-        name: info.map_name || 'Importuotas žemėlapis',
+        name: info.map_name || 'Imported Map',
         width,
         height,
         graphicsIds: graphics,

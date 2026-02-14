@@ -681,7 +681,7 @@ export function PropertiesPanel({
                 </div>
               ))}
               {playfieldInfo.mobSpawns.length === 0 && (
-                <p className="text-xs text-muted-foreground">Nėra mobų</p>
+                <p className="text-xs text-muted-foreground">No mobs</p>
               )}
             </div>
           )}
