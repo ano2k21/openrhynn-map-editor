@@ -1,4 +1,8 @@
 OpenRhynn Map Editor
+<img width="1906" height="894" alt="Screenshot_1" src="https://github.com/user-attachments/assets/69b1d3f7-8dd7-47c9-8ab9-3b360e5da101" />
+
+
+
 A powerful, intuitive, and AI-assisted map editing tool designed specifically for the OpenRhynn ecosystem. This tool empowers developers and creators to build immersive worlds, manage entities, and define gameplay zones with ease.
 
 🚀 Features
@@ -19,7 +23,7 @@ Define and adjust Safe Zones for player interaction.
 Set up Combat Zones to control where the action happens.
 
 Map Refinement: Open and edit any existing map file to update layouts or balance gameplay.
-<img width="1910" height="893" alt="Screenshot_2" src="https://github.com/user-attachments/assets/59c24dac-b554-485f-b559-4008c34d7f0a" />
+
 
 🤖 Built with AI
 This project was developed with the assistance of Artificial Intelligence, leveraging advanced coding models to ensure clean architecture, efficient performance, and user-friendly logic.
